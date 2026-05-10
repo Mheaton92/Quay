@@ -6,6 +6,8 @@ Quay brings all of your homelab connections, stats, and controls into a single
 terminal interface. No browser, no web server - just a fast, keyboard-driven TUI
 that works anywhere.
 
+This was built as a way for me to learn GO.
+
 ## Features
 
 - Manage all SSH connections in one place
