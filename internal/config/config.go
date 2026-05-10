@@ -10,4 +10,10 @@ func ConfigDir() (string, error) {
 	return home + "/.config/quay", nil
 }
 
-
+func EnsureConfigDir() error {
+	path, err := ConfigDir()
+	if err != nil {
+		return err
+	}
+	return os.MkdirAll(path, 0755)
+}
