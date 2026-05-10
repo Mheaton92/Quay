@@ -10,3 +10,12 @@ type Connection struct {
 	Notes  string
 	Args   string
 }
+
+func NewConnection(name, ip, user string, port int) Connection {
+	return Connection{
+		Name: name,
+		IP:   ip,
+		User: user,
+		Port: port,
+	}
+}
