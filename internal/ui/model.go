@@ -18,6 +18,7 @@ type Model struct {
 	width int
 	height int
 	err error
+	cursor int
 }
 
 func NewModel(store connection.Store) Model {
