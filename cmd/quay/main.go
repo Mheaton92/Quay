@@ -12,9 +12,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	store := connection.Store{}
-	err = store.Load()
+	store, err := connection.NewStore()
 	if err != nil {
 		log.Fatal(err)
 	}
+
 }
