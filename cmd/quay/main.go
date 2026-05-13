@@ -25,4 +25,10 @@ func main() {
 		log.Fatal(err)
 	}
 
+/* Test connections
+store.Add(connection.NewConnection("Proxmox", "192.168.4.90", "root", 22))
+store.Add(connection.NewConnection("TrueNAS", "192.168.4.91", "truenas_admin", 22))
+store.Add(connection.NewConnection("AdGuard", "192.168.4.92", "root", 22))
+*/
+
 }
