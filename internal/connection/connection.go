@@ -79,3 +79,11 @@ func (s *Store) Delete(name string) error {
 	}
 	return errors.New("connection not found")
 }
+func NewStore() (*Store, error) {
+	store := &Store{}
+	err := store.Load()
+	if err != nil {
+		return nil, err
+	}
+	return store, nil
+}
