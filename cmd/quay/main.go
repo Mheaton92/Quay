@@ -3,6 +3,7 @@ package main
 import (
 	"github.com/mheaton92/quay/internal/config"
 	"github.com/mheaton92/quay/internal/connection"
+	"github.com/mheaton92/quay/internal/ui"
 	"log"
 )
 
@@ -16,6 +17,8 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = store
+	
+	m := ui.NewModel(*store)
+	_ = m
 
 }
