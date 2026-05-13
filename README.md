@@ -25,7 +25,7 @@ Early development - not ready for use yet.
 
 ## Roadmap
 
-- [ ] Phase 1 - Connection management and JSON persistence
+- [x] Phase 1 - Connection management and JSON persistence
 - [ ] Phase 2 - SSH connect and live stats
 - [ ] Phase 3 - Bubble tea TUI
 - [ ] Phase 4 - Homelab integrations and monitoring

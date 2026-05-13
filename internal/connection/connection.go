@@ -66,6 +66,11 @@ func (s *Store) Load() error {
 }
 
 func (s *Store) Add(c Connection) error {
+	for _, conn := range s.Connections {
+		if conn.Name == c.Name {
+			return errors.New("Connection already exists")
+		}
+	}
 	s.Connections = append(s.Connections, c)
 	return s.Save()
 }
@@ -86,4 +91,14 @@ func NewStore() (*Store, error) {
 		return nil, err
 	}
 	return store, nil
+}
+
+func (s *Store) Edit(name string, updated Connection) error {
+	for i, conn := range s.Connections {
+		if conn.Name == name {
+			s.Connections[i] = updated
+			return s.Save()
+		}
+	}
+	return errors.New("connection not found")
 }
