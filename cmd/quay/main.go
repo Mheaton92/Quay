@@ -5,6 +5,7 @@ import (
 	"github.com/mheaton92/quay/internal/connection"
 	"github.com/mheaton92/quay/internal/ui"
 	"log"
+	tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
@@ -19,6 +20,9 @@ func main() {
 	}
 	
 	m := ui.NewModel(*store)
-	_ = m
+	p := tea.NewProgram(m)
+	if _, err := p.Run(); err != nil {
+		log.Fatal(err)
+	}
 
 }

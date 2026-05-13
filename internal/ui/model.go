@@ -1,6 +1,9 @@
 package ui
 
-import "github.com/mheaton92/quay/internal/connection"
+import (
+	"github.com/mheaton92/quay/internal/connection"
+	tea "github.com/charmbracelet/bubbletea"
+)
 
 type Panel int
 
@@ -22,4 +25,8 @@ func NewModel(store connection.Store) Model {
 		store: 	 store,
 		focused: ConnectionListPanel,
 	}
+}
+
+func (m Model) Init() tea.Cmd {
+	return nil
 }
