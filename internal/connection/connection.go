@@ -102,3 +102,4 @@ func (s *Store) Edit(name string, updated Connection) error {
 	}
 	return errors.New("connection not found")
 }
+
