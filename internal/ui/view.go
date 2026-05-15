@@ -4,11 +4,24 @@ import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"strings"
+	"github.com/mheaton92/quay/internal/connection"
 )
 
 func (m Model) View() string {
 	dot := "● "
+
+	nameLen := maxNameLen(m.store.Connections)
+	width := nameLen + 14
+	separator := strings.Repeat("─", width)
+	
 	var output string
+	output += lipgloss.NewStyle().
+		Bold(true).
+		Width(width).
+		Align(lipgloss.Center).
+		Render(fmt.Sprintf("CONNECTIONS %d", len(m.store.Connections))) + "\n"
+	output += separator + "\n"
+	
 	for i, conn := range m.store.Connections {
 		if i == m.cursor {
 			output += "▶ "
@@ -32,4 +45,14 @@ func lastOctet(ip string) string {
 		return ""
 	}
 	return parts[len(parts)-1]
+}
+
+func maxNameLen(connections []connection.Connection) int {
+	max := 0
+	for _, conn := range connections {
+		if len(conn.Name) > max {
+			max = len(conn.Name)
+		}
+	}
+	return max
 }
