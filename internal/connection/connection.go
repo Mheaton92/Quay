@@ -8,10 +8,25 @@ import (
 )
 
 type Connection struct {
-	Name   string
-	IP     string
-	User   string
-	Port   int
+	// Basic
+	Name         string
+	IP           string
+	User         string
+	Port         int
+	IdentityFile string
+
+	// Connection
+	ProxyJump           string
+	ConnectTimeout      string
+	ForwardAgent        string
+	ServerAliveInterval string
+
+	// Forwarding
+	LocalForward   string
+	RemoteForward  string
+	DynamicForward string
+
+	// Meta
 	Online bool
 	Tags   []string
 	Notes  string
@@ -45,24 +60,24 @@ func (s *Store) Save() error {
 }
 
 func (s *Store) Load() error {
-    dir, err := config.ConfigDir()
-    if err != nil {
-        return err
-    }
-    path := dir + "/connections.json"
-    content, err := os.ReadFile(path)
-    if err != nil {
-        if os.IsNotExist(err) {
-            s.Connections = []Connection{}
-            return nil
-        }
-        return err
-    }
-    err = json.Unmarshal(content, &s.Connections)
-    if err != nil {
-        return err
-    }
-    return nil
+	dir, err := config.ConfigDir()
+	if err != nil {
+		return err
+	}
+	path := dir + "/connections.json"
+	content, err := os.ReadFile(path)
+	if err != nil {
+		if os.IsNotExist(err) {
+			s.Connections = []Connection{}
+			return nil
+		}
+		return err
+	}
+	err = json.Unmarshal(content, &s.Connections)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (s *Store) Add(c Connection) error {
@@ -102,4 +117,3 @@ func (s *Store) Edit(name string, updated Connection) error {
 	}
 	return errors.New("connection not found")
 }
-
