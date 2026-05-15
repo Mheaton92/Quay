@@ -3,25 +3,24 @@ package ui
 import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
-	"strings"
 	"github.com/mheaton92/quay/internal/connection"
+	"strings"
 )
 
 func (m Model) View() string {
-	dot := "● "
 
+	styles := DefaultStyles()
 	nameLen := maxNameLen(m.store.Connections)
 	width := nameLen + 14
 	separator := strings.Repeat("─", width)
-	
+	dot := styles.Dot.Render("● ")
 	var output string
-	output += lipgloss.NewStyle().
-		Bold(true).
+	output += styles.Header.
 		Width(width).
 		Align(lipgloss.Center).
 		Render(fmt.Sprintf("CONNECTIONS %d", len(m.store.Connections))) + "\n"
 	output += separator + "\n"
-	
+
 	for i, conn := range m.store.Connections {
 		if i == m.cursor {
 			output += "▶ "
@@ -30,12 +29,8 @@ func (m Model) View() string {
 		}
 		output += dot + fmt.Sprintf("%-10s", conn.Name) + " ." + lastOctet(conn.IP) + "\n"
 	}
-	panelStyle := lipgloss.NewStyle().
-		Border(lipgloss.RoundedBorder()).
-		BorderForeground(lipgloss.Color("#58a6ff")).
-		Padding(0, 1)
 
-	return panelStyle.Render(output)
+	return styles.Panel.Render(output)
 
 }
 
