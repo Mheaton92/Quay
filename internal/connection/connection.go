@@ -10,7 +10,7 @@ import (
 type Connection struct {
 	// Basic
 	Name         string
-	IP           string
+	Host				 string
 	User         string
 	Port         int
 	IdentityFile string
@@ -37,10 +37,10 @@ type Store struct {
 	Connections []Connection
 }
 
-func NewConnection(name, ip, user string, port int) Connection {
+func NewConnection(name, host, user string, port int) Connection {
 	return Connection{
 		Name: name,
-		IP:   ip,
+		Host: host,
 		User: user,
 		Port: port,
 	}
