@@ -24,7 +24,21 @@ func (m Model) View() string {
     dot := styles.Dot.Render("● ")
 
     if m.showForm {
-        return m.form.View()
+        w := m.width
+        v := m.height
+        if w == 0 {
+            w = 80
+        }
+        if v == 0 {
+            v = 20
+        }
+        formStyle := lipgloss.NewStyle().
+            Border(lipgloss.RoundedBorder()).
+            BorderForeground(lipgloss.Color("#58a6ff")).
+            Width(w - 14).
+            Height(v - 14).
+            Padding(1, 2)
+        return formStyle.Render(m.form.View())
     }
 
     var output string
@@ -49,7 +63,9 @@ func (m Model) View() string {
         output += dot + fmt.Sprintf("%-10s", conn.Name) + " " + display + "\n"
     }
 
-    return styles.Panel.Render(output)
+    leftPanel := styles.Panel.Render(output)
+    rightPanel := styles.Panel.Render("Select a connection to view details")
+    return lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
 }
 
 func lastOctet(ip string) string {
