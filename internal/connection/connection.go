@@ -33,6 +33,8 @@ type Connection struct {
 	Tags   []string
 	Notes  string
 	Args   string
+	lastConnected time.Time
+	ConnectionCount int
 }
 
 type Store struct {

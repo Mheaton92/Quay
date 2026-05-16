@@ -5,6 +5,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/mheaton92/quay/internal/connection"
 	"github.com/mheaton92/quay/internal/ui/theme"
+	"github.com/mheaton92/quay/internal/ui/detail"
 	"net"
 	"strings"
 )
@@ -65,7 +66,13 @@ func (m Model) View() string {
 	}
 
 	leftPanel := styles.Panel.Render(output)
-	rightPanel := styles.Panel.Render("Select a connection to view details")
+	var rightPanel string
+	if len(m.store.Connections) > 0 {
+		selected := m.store.Connections[m.cursor]
+		rightPanel = detail.Render(selected, m.width/2)
+	} else {
+		rightPanel = styles.Panel.Render("No connections yet — press 'a' to add one")
+	}
 	return lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
 }
 
