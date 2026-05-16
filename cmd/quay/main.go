@@ -20,7 +20,7 @@ func main() {
 	}
 
 	m := ui.NewModel(*store)
-	p := tea.NewProgram(m)
+	p := tea.NewProgram(&m)
 	if _, err := p.Run(); err != nil {
 		log.Fatal(err)
 	}

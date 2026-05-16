@@ -20,7 +20,7 @@ type Model struct {
 	height int
 	err error
 	cursor int
-	form form.Model
+	form *form.Model
 	showForm bool
 }
 

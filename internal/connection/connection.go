@@ -5,6 +5,7 @@ import (
 	"errors"
 	"github.com/mheaton92/quay/internal/config"
 	"os"
+	"time"
 )
 
 type Connection struct {

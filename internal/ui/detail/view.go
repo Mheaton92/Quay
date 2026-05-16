@@ -13,8 +13,8 @@ func Render(conn connection.Connection, width int ) string {
 
 	var output string
 	output += styles.Header.Render(conn.Name) + "\n"
-	output += fmt.Sprintf("%s@%s port %d", conn.User, conn.Host, conn.Port) + 
-	output += "Key: " + conn.IdentityFile +
+	output += fmt.Sprintf("%s@%s port %d", conn.User, conn.Host, conn.Port) + "\n"
+	output += "Key: " + conn.IdentityFile + "\n"
 	output += "Tags: " + strings.Join(conn.Tags, ", ") + "\n"
 
 	panelStyle := lipgloss.NewStyle().

@@ -4,9 +4,10 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mheaton92/quay/internal/connection"
 	"github.com/mheaton92/quay/internal/ui/form"
+	"github.com/mheaton92/quay/internal/ssh"
 )
 
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Handle escpae/quit at the top level
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		switch msg.String() {
@@ -23,7 +24,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.showForm {
 		var cmd tea.Cmd
 		m.form, cmd = m.form.Update(msg)
-		if m.form.Done() {
+		if m.form != nil && m.form.Done() {
 			m.store.Add(m.form.Connection())
 			m.showForm = false
 		}
@@ -48,7 +49,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.form = form.NewForm(connection.Connection{})
 			m.showForm = true
 
+		case "enter":
+			if len(m.store.Connections) > 0 {
+				selected := m.store.Connections[m.cursor]
+				err := ssh.Connect(selected)
+				if err != nil {
+					m.err = err
+				}
+			}
+
+		case "d":
+			if len(m.store.Connections) > 0 {
+				selected := m.store.Connections[m.cursor]
+				m.store.Delete(selected.Name)
+				if m.cursor > 0 {
+					m.cursor--
+				}
+			}
 		}
+		
 	}
 	return m, nil
 }
