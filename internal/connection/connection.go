@@ -20,6 +20,8 @@ type Connection struct {
 	ConnectTimeout      string
 	ForwardAgent        string
 	ServerAliveInterval string
+	ServerAliveCountMax string
+	TCPKeepAlive				string
 
 	// Forwarding
 	LocalForward   string
