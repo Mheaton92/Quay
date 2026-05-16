@@ -3,6 +3,7 @@ package ui
 import (
 	"github.com/mheaton92/quay/internal/connection"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/mheaton92/quay/internal/ui/form"
 )
 
 type Panel int
@@ -19,6 +20,8 @@ type Model struct {
 	height int
 	err error
 	cursor int
+	form form.Model
+	showForm bool
 }
 
 func NewModel(store connection.Store) Model {

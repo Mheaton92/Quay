@@ -3,6 +3,7 @@ package form
 import (
 	"github.com/charmbracelet/huh"
 	"github.com/mheaton92/quay/internal/connection"
+	"os"
 )
 
 type Model struct {
@@ -15,15 +16,28 @@ type Model struct {
 
 
 func NewForm(conn connection.Connection) Model {
-    m := Model{conn: conn}
+    m := Model{
+		conn: conn,
+		portStr: "22",
+		tagsStr: "",
+	}
+	defaultKey := ""
+	if _, err := os.Stat(os.Getenv("HOME") + "/.ssh/id_ed25519"); err == nil {
+		defaultKey = os.Getenv("HOME") + "/.ssh/id_ed25519"
+	}
+		m.conn.IdentityFile = defaultKey
+		
+	m.conn.User = os.Getenv("USER")
     m.form = huh.NewForm(
 		// Basic feilds
         huh.NewGroup( 
             huh.NewInput().
                 Title("Name").
+				Placeholder("Alias for this connection").
                 Value(&m.conn.Name),
             huh.NewInput().
                 Title("Host").
+				Placeholder("Hostname or IP address").
                 Value(&m.conn.Host),
             huh.NewInput().
                 Title("User").
@@ -33,8 +47,9 @@ func NewForm(conn connection.Connection) Model {
                 Value(&m.portStr),
 			huh.NewInput().
 				Title("Key").
+				Placeholder(defaultKey).
 				Value(&m.conn.IdentityFile),
-        ),
+        ).Title("Basic"),
 		// Connection fields
 		huh.NewGroup(
 			huh.NewInput().
@@ -56,7 +71,7 @@ func NewForm(conn connection.Connection) Model {
 				Title("TCP Keep Alive").
 				Value(&m.conn.TCPKeepAlive),
 			
-		),
+		).Title("Connection"),
 		// Forwarding fields
 		huh.NewGroup(
 			huh.NewInput().
@@ -68,7 +83,7 @@ func NewForm(conn connection.Connection) Model {
 			huh.NewInput().
 				Title("Dynamic Forward").
 				Value(&m.conn.DynamicForward),
-		),
+		).Title("Forwarding"),
 		// Meta fields
 		huh.NewGroup(
 			huh.NewInput().
@@ -80,7 +95,14 @@ func NewForm(conn connection.Connection) Model {
 			huh.NewInput().
 				Title("Args").
 				Value(&m.conn.Args),
-		),
+		).Title("Meta"),
     )
     return m
 }
+func (m Model) Done() bool {
+	return m.done
+}
+
+func (m Model) Connection() connection.Connection {
+	return m.conn
+}	

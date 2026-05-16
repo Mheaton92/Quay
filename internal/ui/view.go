@@ -9,11 +9,23 @@ import (
 )
 
 func (m Model) View() string {
+    if m.width < 70 || m.height < 20 {
+        return lipgloss.NewStyle().
+            Foreground(lipgloss.Color("#f85149")).
+            Align(lipgloss.Center).
+            Width(m.width).
+            Render("\n\nTerminal too small\nMinimum size: 70x20\nCurrent: " +
+                fmt.Sprintf("%dx%d", m.width, m.height))
+    }
     styles := DefaultStyles()
     nameLen := maxNameLen(m.store.Connections)
     width := nameLen + 14
     separator := strings.Repeat("─", width)
     dot := styles.Dot.Render("● ")
+
+    if m.showForm {
+        return m.form.View()
+    }
 
     var output string
     output += styles.Header.
