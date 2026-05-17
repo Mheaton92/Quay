@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
     "fmt"
+    "errors"
 )
 
 type Model struct {
@@ -50,10 +51,44 @@ func NewForm(conn connection.Connection) *Model {
 
     m.form = huh.NewForm(
         huh.NewGroup(
-            huh.NewInput().Title("Name").Placeholder("Alias for this connection").Value(&m.conn.Name),
-            huh.NewInput().Title("Host").Placeholder("Hostname or IP address").Value(&m.conn.Host),
+            huh.NewInput().
+            Title("Name").
+            Placeholder("Alias for this connection").
+            Value(&m.conn.Name).
+            Validate(func(s string) error {
+                if s == "" {
+                    return errors.New("Name is required")
+                }
+                return nil
+            }),
+
+            huh.NewInput().
+            Title("Host").
+            Placeholder("Hostname or IP address").
+            Value(&m.conn.Host).
+            Validate(func(s string) error {
+                if s == "" {
+                    return errors.New("Host is required")
+                }
+                return nil
+            }),
+
             huh.NewInput().Title("User").Value(&m.conn.User),
-            huh.NewInput().Title("Port").Value(&m.portStr),
+            
+            huh.NewInput().
+            Title("Port").
+            Value(&m.portStr).
+            Validate(func(s string) error {
+                port, err := strconv.Atoi(s)
+                if err != nil {
+                    return fmt.Errorf("Port must be a number")
+                }
+                if port < 1 || port > 65535 {
+                    return fmt.Errorf("Port must be between 1 and 65535")
+                }
+                return nil
+            }),
+
             huh.NewInput().Title("Key").Placeholder(defaultKey).Value(&m.conn.IdentityFile),
         ),
         huh.NewGroup(
