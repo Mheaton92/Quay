@@ -6,6 +6,7 @@ import (
 	"github.com/mheaton92/quay/internal/ui/form"
 	"github.com/mheaton92/quay/internal/ssh"
 	"time"
+	"github.com/mheaton92/quay/internal/ui/scp"
 )
 
 type sshExitMsg struct {
@@ -40,6 +41,15 @@ if m.showForm {
         m.showForm = false
     }
     return m, cmd
+}
+
+if m.showSCP {
+	var cmd tea.Cmd
+	m.scpModel, cmd = m.scpModel.Update(msg)
+	if m.scpModel != nil && m.scpModel.Done() {
+		m.showSCP = false
+	}
+	return m, cmd
 }
 
 	switch msg := msg.(type) {
@@ -104,6 +114,13 @@ if m.showForm {
 				m.form.SetEditing(true)
 				m.showForm = true
 				return m, m.form.Init()
+			}
+		case "s":
+			if len(m.store.Connections) > 0 {
+				selected := m.store.Connections[m.cursor]
+				m.scpModel = scp.NewSCP(selected)
+				m.showSCP = true
+				return m, m.scpModel.Init()
 			}
 		}
 		

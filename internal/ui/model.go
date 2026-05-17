@@ -4,6 +4,7 @@ import (
 	"github.com/mheaton92/quay/internal/connection"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mheaton92/quay/internal/ui/form"
+	"github.com/mheaton92/quay/internal/ui/scp"
 )
 
 type Panel int
@@ -23,6 +24,8 @@ type Model struct {
 	form *form.Model
 	showForm bool
 	confirmDelete bool
+	scpModel *scp.Model
+	showSCP bool
 }
 
 func NewModel(store connection.Store) Model {
