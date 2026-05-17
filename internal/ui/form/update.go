@@ -24,6 +24,9 @@ if key, ok := msg.(tea.KeyMsg); ok {
         return m, m.form.PrevField()
     case "down":
         return m, m.form.NextField()
+    case "ctrl+s":
+        m.done = true
+        return m, nil
     }
 }
     form, cmd := m.form.Update(msg)

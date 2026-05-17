@@ -6,6 +6,7 @@ import (
     tea "github.com/charmbracelet/bubbletea"
 	"os"
 	"strconv"
+    "fmt"
 )
 
 type Model struct {
@@ -16,6 +17,7 @@ type Model struct {
 	done bool
     editing bool // true if editing an existing connection, false if creating new
     page int // current page index
+    originalName string
 }
 
 func (m *Model) Init() tea.Cmd {
@@ -25,15 +27,27 @@ func (m *Model) Init() tea.Cmd {
 func NewForm(conn connection.Connection) *Model {
     m := &Model{
         conn:    conn,
-        portStr: "22",
+        portStr: func() string {
+            if conn.Port == 0 {
+                return "22"
+            }
+            return fmt.Sprintf("%d", conn.Port)
+        }(),
         tagsStr: "",
     }
+     m.originalName = conn.Name
     defaultKey := ""
     if _, err := os.Stat(os.Getenv("HOME") + "/.ssh/id_ed25519"); err == nil {
         defaultKey = os.Getenv("HOME") + "/.ssh/id_ed25519"
     }
-    m.conn.IdentityFile = defaultKey
-    m.conn.User = os.Getenv("USER")
+
+    if m.conn.IdentityFile == "" {
+        m.conn.IdentityFile = defaultKey
+    }
+    if m.conn.User == "" {
+        m.conn.User = os.Getenv("USER")
+    }
+
     m.form = huh.NewForm(
         huh.NewGroup(
             huh.NewInput().Title("Name").Placeholder("Alias for this connection").Value(&m.conn.Name),
@@ -78,4 +92,10 @@ func (m *Model) Connection() connection.Connection {
 }
 func (m *Model) IsEditing() bool {
     return m.editing
+}
+func (m *Model) SetEditing(editing bool) {
+    m.editing = editing
+}
+func (m *Model) OriginalName() string {
+    return m.originalName
 }

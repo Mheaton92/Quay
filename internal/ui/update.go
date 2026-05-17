@@ -33,7 +33,7 @@ if m.showForm {
     m.form, cmd = m.form.Update(msg)
     if m.form != nil && m.form.Done() {
         if m.form.IsEditing() {
-            m.store.Edit(m.form.Connection().Name, m.form.Connection())
+            m.store.Edit(m.form.OriginalName(), m.form.Connection())
         } else {
             m.store.Add(m.form.Connection())
         }
@@ -101,6 +101,7 @@ if m.showForm {
 			if len(m.store.Connections) > 0 {
 				selected := m.store.Connections[m.cursor]
 				m.form = form.NewForm(selected)
+				m.form.SetEditing(true)
 				m.showForm = true
 				return m, m.form.Init()
 			}
