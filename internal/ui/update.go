@@ -6,6 +6,7 @@ import (
     "github.com/mheaton92/quay/internal/ui/form"
     "github.com/mheaton92/quay/internal/ui/scp"
     "github.com/mheaton92/quay/internal/ssh"
+    uikeys "github.com/mheaton92/quay/internal/ui/keys"
     "time"
 )
 
@@ -56,6 +57,20 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
             }
             m.showForm = false
         }
+        return m, cmd
+    }
+
+    if m.showKeys {
+        if msg, ok := msg.(tea.KeyMsg); ok {
+            if msg.String() == "esc" {
+                if m.keysModel.IsInView() {
+                    m.showKeys = false
+                    return m, nil
+                }
+            }
+        }
+        var cmd tea.Cmd
+        m.keysModel, cmd = m.keysModel.Update(msg)
         return m, cmd
     }
 
@@ -130,6 +145,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
                 m.scpModel = scp.NewSCP(selected)
                 m.showSCP = true
                 return m, m.scpModel.Init()
+            }
+        case "K":
+            keysModel, err := uikeys.NewKeys(m.store.Connections)
+            if err != nil {
+                m.err = err
+            } else {
+                m.keysModel = keysModel
+                m.showKeys = true
             }
         }
     }

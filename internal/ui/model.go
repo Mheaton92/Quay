@@ -5,6 +5,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mheaton92/quay/internal/ui/form"
 	"github.com/mheaton92/quay/internal/ui/scp"
+	uikeys "github.com/mheaton92/quay/internal/ui/keys"
 )
 
 type Panel int
@@ -26,6 +27,8 @@ type Model struct {
 	confirmDelete bool
 	scpModel *scp.Model
 	showSCP bool
+	keysModel *uikeys.Model
+	showKeys bool
 }
 
 func NewModel(store connection.Store) Model {

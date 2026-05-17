@@ -20,12 +20,12 @@ func (m Model) View() string {
     }
 
     if m.showForm {
-        scpStyle := lipgloss.NewStyle().
+        formStyle := lipgloss.NewStyle().
             Border(lipgloss.RoundedBorder()).
             BorderForeground(lipgloss.Color("#58a6ff")).
             Width(60).
             Padding(1, 2)
-        return scpStyle.Render(m.scpModel.View())
+        return formStyle.Render(m.form.View())
     }
 
     if m.showSCP {
@@ -36,6 +36,16 @@ func (m Model) View() string {
             Height(15).
             Padding(1, 2)
         return scpStyle.Render(m.scpModel.View())
+    }
+
+    if m.showKeys {
+        scpStyle := lipgloss.NewStyle().
+            Border(lipgloss.RoundedBorder()).
+            BorderForeground(lipgloss.Color("#58a6ff")).
+            Width(60).
+            Height(15).
+            Padding(1, 2)
+        return scpStyle.Render(m.keysModel.View())
     }
 
     styles := theme.DefaultStyles()
