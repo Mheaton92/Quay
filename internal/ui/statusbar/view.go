@@ -17,7 +17,7 @@ func Render(width int, confirmDelete bool, deleteName string) string {
     
     keys := lipgloss.NewStyle().
         Foreground(lipgloss.Color("#484f58")).
-        Render("[enter] connect  [a] add  [e] edit  [d] delete  [j/k] navigate  [q] quit")
+        Render("[enter] connect  [a] add  [e] edit  [d] delete [s] scp [j/k] navigate  [q] quit")
     
     return separator + "\n" + keys
 }

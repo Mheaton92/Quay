@@ -20,17 +20,22 @@ func (m Model) View() string {
     }
 
     if m.showForm {
-        w := m.width
-        v := m.height
-        if w == 0 { w = 80 }
-        if v == 0 { v = 20 }
-        formStyle := lipgloss.NewStyle().
+        scpStyle := lipgloss.NewStyle().
             Border(lipgloss.RoundedBorder()).
             BorderForeground(lipgloss.Color("#58a6ff")).
-            Width(w - 14).
-            Height(v - 14).
+            Width(60).
             Padding(1, 2)
-        return formStyle.Render(m.form.View())
+        return scpStyle.Render(m.scpModel.View())
+    }
+
+    if m.showSCP {
+        scpStyle := lipgloss.NewStyle().
+            Border(lipgloss.RoundedBorder()).
+            BorderForeground(lipgloss.Color("#58a6ff")).
+            Width(60).
+            Height(15).
+            Padding(1, 2)
+        return scpStyle.Render(m.scpModel.View())
     }
 
     styles := theme.DefaultStyles()
