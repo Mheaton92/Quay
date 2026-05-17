@@ -9,6 +9,7 @@ import (
 	"github.com/mheaton92/quay/internal/ui/theme"
 	"net"
 	"strings"
+	"sort"
 )
 
 func (m Model) View() string {
@@ -50,6 +51,10 @@ func (m Model) View() string {
 		Align(lipgloss.Center).
 		Render(fmt.Sprintf("CONNECTIONS %d", len(m.store.Connections))) + "\n"
 	output += separator + "\n"
+
+	sort.Slice(m.store.Connections, func(i, j int) bool {
+		return m.store.Connections[i].ConnectionCount > m.store.Connections[j].ConnectionCount
+	})
 
 	for i, conn := range m.store.Connections {
 		if i == m.cursor {
