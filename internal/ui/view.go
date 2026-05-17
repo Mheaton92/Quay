@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/mheaton92/quay/internal/connection"
-	"github.com/mheaton92/quay/internal/ui/theme"
 	"github.com/mheaton92/quay/internal/ui/detail"
 	"github.com/mheaton92/quay/internal/ui/statusbar"
+	"github.com/mheaton92/quay/internal/ui/theme"
 	"net"
 	"strings"
 )
@@ -66,16 +66,19 @@ func (m Model) View() string {
 		output += dot + fmt.Sprintf("%-10s", conn.Name) + " " + display + "\n"
 	}
 
-	leftPanel := styles.Panel.Render(output)
+	panelHeight := m.height - 5
+	leftPanel := styles.Panel.Copy().Height(panelHeight).Render(output)
+
 	var rightPanel string
 	if len(m.store.Connections) > 0 {
 		selected := m.store.Connections[m.cursor]
-		rightPanel = detail.Render(selected, m.width/2)
+		rightPanel = detail.Render(selected, m.width/2, panelHeight)
 	} else {
-		rightPanel = styles.Panel.Render("No connections yet — press 'a' to add one")
+		rightPanel = styles.Panel.Copy().Height(panelHeight).Render("No connections yet — press 'a' to add one")
 	}
+
 	mainView := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
-	statusBar := statusbar.Render(m.width)
+	statusBar := statusbar.Render(m.width, m.confirmDelete, m.store.Connections[m.cursor].Name)
 	return lipgloss.JoinVertical(lipgloss.Left, mainView, statusBar)
 }
 

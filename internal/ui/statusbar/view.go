@@ -5,8 +5,15 @@ import (
 	"strings"
 )
 
-func Render(width int) string {
+func Render(width int, confirmDelete bool, deleteName string) string {
     separator := strings.Repeat("─", width)
+    
+    if confirmDelete {
+        confirmMsg := lipgloss.NewStyle().
+            Foreground(lipgloss.Color("#f85149")).
+            Render("Delete \"" + deleteName + "\"? [y] yes  [n] no")
+        return separator + "\n" + confirmMsg
+    }
     
     keys := lipgloss.NewStyle().
         Foreground(lipgloss.Color("#484f58")).

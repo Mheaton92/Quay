@@ -28,15 +28,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	}
-	if m.showForm {
-		var cmd tea.Cmd
-		m.form, cmd = m.form.Update(msg)
-		if m.form != nil && m.form.Done() {
-			m.store.Add(m.form.Connection())
-			m.showForm = false
-		}
-		return m, cmd
-	}
+if m.showForm {
+    var cmd tea.Cmd
+    m.form, cmd = m.form.Update(msg)
+    if m.form != nil && m.form.Done() {
+        if m.form.IsEditing() {
+            m.store.Edit(m.form.Connection().Name, m.form.Connection())
+        } else {
+            m.store.Add(m.form.Connection())
+        }
+        m.showForm = false
+    }
+    return m, cmd
+}
 
 	switch msg := msg.(type) {
     case tea.WindowSizeMsg:
@@ -65,6 +69,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "a":
 			m.form = form.NewForm(connection.Connection{})
 			m.showForm = true
+			return m, m.form.Init()
 			
 		case "enter":
 			if len(m.store.Connections) > 0 {
@@ -77,11 +82,27 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "d":
 			if len(m.store.Connections) > 0 {
+				if len(m.store.Connections) > 0 {
+					m.confirmDelete = true
+				}
+			}
+		case "y":
+			if m.confirmDelete {
 				selected := m.store.Connections[m.cursor]
 				m.store.Delete(selected.Name)
 				if m.cursor > 0 {
 					m.cursor--
 				}
+				m.confirmDelete = false
+			}
+		case "n":
+			m.confirmDelete = false
+		case "e":
+			if len(m.store.Connections) > 0 {
+				selected := m.store.Connections[m.cursor]
+				m.form = form.NewForm(selected)
+				m.showForm = true
+				return m, m.form.Init()
 			}
 		}
 		

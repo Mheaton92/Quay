@@ -22,6 +22,7 @@ type Model struct {
 	cursor int
 	form *form.Model
 	showForm bool
+	confirmDelete bool
 }
 
 func NewModel(store connection.Store) Model {
