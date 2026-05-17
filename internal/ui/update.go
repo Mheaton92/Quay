@@ -52,10 +52,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if len(m.store.Connections) > 0 {
 				selected := m.store.Connections[m.cursor]
-				err := ssh.Connect(selected)
-				if err != nil {
-					m.err = err
-				}
+				sshCmd := ssh.BuildCmd(selected)
+				return m, tea.ExecProcess(sshCmd, func(err error) tea.Msg {
+					return err
+				})
 			}
 
 		case "d":
