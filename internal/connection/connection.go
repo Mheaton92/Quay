@@ -34,7 +34,7 @@ type Connection struct {
 	Tags   []string
 	Notes  string
 	Args   string
-	lastConnected time.Time
+	LastConnected time.Time
 	ConnectionCount int
 }
 

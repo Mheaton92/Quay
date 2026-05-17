@@ -5,7 +5,14 @@ import (
 	"github.com/mheaton92/quay/internal/connection"
 	"github.com/mheaton92/quay/internal/ui/form"
 	"github.com/mheaton92/quay/internal/ssh"
+	"time"
 )
+
+type sshExitMsg struct {
+	connName string
+	err      error
+}
+
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// Handle escpae/quit at the top level
@@ -35,6 +42,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
     case tea.WindowSizeMsg:
         m.width = msg.Width
         m.height = msg.Height
+	case sshExitMsg:
+		for i, conn := range m.store.Connections {
+			if conn.Name == msg.connName {
+				m.store.Connections[i].LastConnected = time.Now()
+				m.store.Connections[i].ConnectionCount++
+				m.store.Save()
+				break
+			}
+		}
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j", "down":
@@ -48,13 +65,13 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "a":
 			m.form = form.NewForm(connection.Connection{})
 			m.showForm = true
-
+			
 		case "enter":
 			if len(m.store.Connections) > 0 {
 				selected := m.store.Connections[m.cursor]
 				sshCmd := ssh.BuildCmd(selected)
 				return m, tea.ExecProcess(sshCmd, func(err error) tea.Msg {
-					return err
+					return sshExitMsg{connName: selected.Name, err: err}
 				})
 			}
 
