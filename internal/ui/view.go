@@ -6,6 +6,7 @@ import (
 	"github.com/mheaton92/quay/internal/connection"
 	"github.com/mheaton92/quay/internal/ui/theme"
 	"github.com/mheaton92/quay/internal/ui/detail"
+	"github.com/mheaton92/quay/internal/ui/statusbar"
 	"net"
 	"strings"
 )
@@ -73,7 +74,9 @@ func (m Model) View() string {
 	} else {
 		rightPanel = styles.Panel.Render("No connections yet — press 'a' to add one")
 	}
-	return lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
+	mainView := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
+	statusBar := statusbar.Render(m.width)
+	return lipgloss.JoinVertical(lipgloss.Left, mainView, statusBar)
 }
 
 func lastOctet(ip string) string {
