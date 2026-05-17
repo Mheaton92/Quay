@@ -15,5 +15,5 @@ func EnsureConfigDir() error {
 	if err != nil {
 		return err
 	}
-	return os.MkdirAll(path, 0755)
+	return os.MkdirAll(path, 0700)
 }
