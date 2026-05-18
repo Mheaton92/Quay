@@ -1,10 +1,10 @@
 package scp
 
 import (
-	"github.com/mheaton92/quay/internal/connection"
-	"os/exec"
 	"fmt"
+	"github.com/mheaton92/quay/internal/connection"
 	"os"
+	"os/exec"
 )
 
 func Upload(conn connection.Connection, localPath string, remotePath string) error {
@@ -16,7 +16,7 @@ func Upload(conn connection.Connection, localPath string, remotePath string) err
 	if conn.IdentityFile != "" {
 		args = append(args, "-i", conn.IdentityFile)
 	}
-	
+
 	args = append(args, localPath, conn.User+"@"+conn.Host+":"+remotePath)
 
 	cmd := exec.Command(args[0], args[1:]...)
@@ -36,7 +36,7 @@ func Download(conn connection.Connection, remotePath string, localPath string) e
 	if conn.IdentityFile != "" {
 		args = append(args, "-i", conn.IdentityFile)
 	}
-	
+
 	args = append(args, conn.User+"@"+conn.Host+":"+remotePath, localPath)
 
 	cmd := exec.Command(args[0], args[1:]...)

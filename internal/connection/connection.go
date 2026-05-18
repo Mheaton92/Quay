@@ -11,7 +11,7 @@ import (
 type Connection struct {
 	// Basic
 	Name         string
-	Host				 string
+	Host         string
 	User         string
 	Port         int
 	IdentityFile string
@@ -22,7 +22,7 @@ type Connection struct {
 	ForwardAgent        string
 	ServerAliveInterval string
 	ServerAliveCountMax string
-	TCPKeepAlive				string
+	TCPKeepAlive        string
 
 	// Forwarding
 	LocalForward   string
@@ -30,11 +30,11 @@ type Connection struct {
 	DynamicForward string
 
 	// Meta
-	Online bool
-	Tags   []string
-	Notes  string
-	Args   string
-	LastConnected time.Time
+	Online          bool
+	Tags            []string
+	Notes           string
+	Args            string
+	LastConnected   time.Time
 	ConnectionCount int
 }
 

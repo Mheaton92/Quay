@@ -1,11 +1,11 @@
 package scp
 
 import (
-	"github.com/mheaton92/quay/internal/connection"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/bubbles/filepicker"
-	"os"
 	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/mheaton92/quay/internal/connection"
+	"os"
 )
 
 type Step int
@@ -19,21 +19,21 @@ const (
 )
 
 type Model struct {
-	conn 		connection.Connection
-	upload 		bool
-	step 		Step
-	localPath 	string
-	remotePath 	string
-	status 		string
-	err 		error
-	fp 			filepicker.Model
-	remoteInput 	textinput.Model
-	localInput 	textinput.Model
+	conn        connection.Connection
+	upload      bool
+	step        Step
+	localPath   string
+	remotePath  string
+	status      string
+	err         error
+	fp          filepicker.Model
+	remoteInput textinput.Model
+	localInput  textinput.Model
 }
 
 func NewSCP(conn connection.Connection) *Model {
-    fp := filepicker.New()
-    fp.CurrentDirectory = os.Getenv("HOME")
+	fp := filepicker.New()
+	fp.CurrentDirectory = os.Getenv("HOME")
 	fp.Height = 20
 	ti := textinput.New()
 	ti.Placeholder = "Enter remote path (e.g., /home/user/file.txt)"
@@ -45,17 +45,17 @@ func NewSCP(conn connection.Connection) *Model {
 	li.Focus()
 	li.CharLimit = 256
 	li.Width = 50
-    return &Model{
-        conn: conn,
-        step: StepDirection,
-        fp:   fp,
-        remoteInput: ti,
-        localInput:  li,
-    }
+	return &Model{
+		conn:        conn,
+		step:        StepDirection,
+		fp:          fp,
+		remoteInput: ti,
+		localInput:  li,
+	}
 }
 
 func (m *Model) Init() tea.Cmd {
-    return m.fp.Init()
+	return m.fp.Init()
 }
 func (m *Model) Done() bool {
 	return false // never auto-close, user must press esc

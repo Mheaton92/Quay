@@ -2,11 +2,11 @@ package ssh
 
 import (
 	"fmt"
-	"syscall"
 	"github.com/mheaton92/quay/internal/connection"
-	"os/exec"
-	"os"
 	"golang.org/x/term"
+	"os"
+	"os/exec"
+	"syscall"
 )
 
 func BuildCmd(conn connection.Connection) *exec.Cmd {
@@ -48,7 +48,6 @@ func BuildCmd(conn connection.Connection) *exec.Cmd {
 	if conn.Args != "" {
 		args = append(args, conn.Args)
 	}
-
 
 	args = append(args, conn.User+"@"+conn.Host)
 
