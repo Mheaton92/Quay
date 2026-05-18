@@ -6,9 +6,11 @@ import (
 	"github.com/mheaton92/quay/internal/ui/form"
 	uikeys "github.com/mheaton92/quay/internal/ui/keys"
 	"github.com/mheaton92/quay/internal/ui/scp"
+	"github.com/mheaton92/quay/internal/config"
 )
 
 type Panel int
+
 
 const (
 	ConnectionListPanel Panel = 0
@@ -29,12 +31,15 @@ type Model struct {
 	showSCP       bool
 	keysModel     *uikeys.Model
 	showKeys      bool
+	keybinds      config.Keybinds
+	showHelp       bool
 }
 
 func NewModel(store connection.Store) Model {
 	return Model{
 		store:   store,
 		focused: ConnectionListPanel,
+		keybinds: config.DefaultKeybinds(),
 	}
 }
 

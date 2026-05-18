@@ -154,6 +154,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.keysModel = keysModel
 				m.showKeys = true
 			}
+			case "?":
+				m.showHelp = !m.showHelp
 		}
 	}
 	return m, nil
