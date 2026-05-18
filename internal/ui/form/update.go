@@ -3,6 +3,7 @@ package form
 import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
+	"strconv"
 )
 
 func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
@@ -25,6 +26,20 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 		case "down":
 			return m, m.form.NextField()
 		case "ctrl+s":
+			if m.conn.Name == "" {
+				m.validationError = "Name is required"
+				return m, nil
+			}
+			if m.conn.Host == "" {
+				m.validationError = "Host is required"
+				return m, nil
+			}
+			port, _ := strconv.Atoi(m.portStr)
+			if port < 1 || port > 65535 {
+				m.validationError = "Port must be between 1 and 65535"
+				return m, nil
+			}
+			m.validationError = ""
 			m.done = true
 			return m, nil
 		}

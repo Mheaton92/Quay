@@ -1,7 +1,6 @@
 package form
 
 import (
-	"errors"
 	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/huh"
@@ -19,6 +18,7 @@ type Model struct {
 	editing      bool // true if editing an existing connection, false if creating new
 	page         int  // current page index
 	originalName string
+	validationError string
 }
 
 func (m *Model) Init() tea.Cmd {
@@ -54,40 +54,20 @@ func NewForm(conn connection.Connection) *Model {
 			huh.NewInput().
 				Title("Name").
 				Placeholder("Alias for this connection").
-				Value(&m.conn.Name).
-				Validate(func(s string) error {
-					if s == "" {
-						return errors.New("Name is required")
-					}
-					return nil
-				}),
+				Value(&m.conn.Name),
+	
 
 			huh.NewInput().
 				Title("Host").
 				Placeholder("Hostname or IP address").
-				Value(&m.conn.Host).
-				Validate(func(s string) error {
-					if s == "" {
-						return errors.New("Host is required")
-					}
-					return nil
-				}),
+				Value(&m.conn.Host),
+			
 
 			huh.NewInput().Title("User").Value(&m.conn.User),
 
 			huh.NewInput().
 				Title("Port").
-				Value(&m.portStr).
-				Validate(func(s string) error {
-					port, err := strconv.Atoi(s)
-					if err != nil {
-						return fmt.Errorf("Port must be a number")
-					}
-					if port < 1 || port > 65535 {
-						return fmt.Errorf("Port must be between 1 and 65535")
-					}
-					return nil
-				}),
+				Value(&m.portStr),
 
 			huh.NewInput().Title("Key").Placeholder(defaultKey).Value(&m.conn.IdentityFile),
 		),
@@ -109,7 +89,7 @@ func NewForm(conn connection.Connection) *Model {
 			huh.NewInput().Title("Notes").Value(&m.conn.Notes),
 			huh.NewInput().Title("Args").Value(&m.conn.Args),
 		),
-	).WithShowHelp(false)
+	).WithShowHelp(false).WithShowErrors(false)
 	return m
 }
 
