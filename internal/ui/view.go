@@ -5,6 +5,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/mheaton92/quay/internal/ui/connectionlist"
 	"github.com/mheaton92/quay/internal/ui/detail"
+	"github.com/mheaton92/quay/internal/ui/keybinds"
 	"github.com/mheaton92/quay/internal/ui/statusbar"
 	"github.com/mheaton92/quay/internal/ui/theme"
 )
@@ -17,6 +18,10 @@ func (m Model) View() string {
 			Width(m.width).
 			Render("\n\nTerminal too small\nMinimum size: 70x20\nCurrent: " +
 				fmt.Sprintf("%dx%d", m.width, m.height))
+	}
+
+	if m.showHelp {
+		return keybinds.Render(m.width, m.keybinds)
 	}
 
 	if m.showForm {

@@ -16,13 +16,40 @@ type sshExitMsg struct {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// ctrl+c always quits no matter what
+	// ctrl+c always quits
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
+	if msg.String() == "esc" {
+		if m.showHelp {
+			m.showHelp = false
+			return m, nil
+		}
+		if m.showSCP {
+			m.showSCP = false
+			return m, nil
+		}
+		if m.showForm {
+			m.showForm = false
+			return m, nil
+		}
+		if m.showKeys && m.keysModel.IsInView() {
+			m.showKeys = false
+			return m, nil
+		}
 	}
 
+	if msg.String() == "q" {
+		if m.showHelp {
+			m.showHelp = false
+			return m, nil
+		}
+		if !m.showForm && !m.showSCP && !m.showKeys {
+			return m, tea.Quit
+		}
+	}
+}
 	// SCP gets messages before anything else
 	if m.showSCP {
 		if msg, ok := msg.(tea.KeyMsg); ok {
@@ -154,8 +181,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.keysModel = keysModel
 				m.showKeys = true
 			}
-			case "?":
-				m.showHelp = !m.showHelp
+		case "?":
+			m.showHelp = !m.showHelp
 		}
 	}
 	return m, nil
