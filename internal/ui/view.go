@@ -8,6 +8,7 @@ import (
 	"github.com/mheaton92/quay/internal/ui/keybinds"
 	"github.com/mheaton92/quay/internal/ui/statusbar"
 	"github.com/mheaton92/quay/internal/ui/theme"
+	ovl "github.com/jsdoublel/bubbletea-overlay"
 )
 
 func (m Model) View() string {
@@ -18,39 +19,6 @@ func (m Model) View() string {
 			Width(m.width).
 			Render("\n\nTerminal too small\nMinimum size: 70x20\nCurrent: " +
 				fmt.Sprintf("%dx%d", m.width, m.height))
-	}
-
-	if m.showHelp {
-		return keybinds.Render(m.width, m.keybinds)
-	}
-
-	if m.showForm {
-		formStyle := lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#58a6ff")).
-			Width(60).
-			Padding(1, 2)
-		return formStyle.Render(m.form.View())
-	}
-
-	if m.showSCP {
-		scpStyle := lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#58a6ff")).
-			Width(60).
-			Height(15).
-			Padding(1, 2)
-		return scpStyle.Render(m.scpModel.View())
-	}
-
-	if m.showKeys {
-		scpStyle := lipgloss.NewStyle().
-			Border(lipgloss.RoundedBorder()).
-			BorderForeground(lipgloss.Color("#58a6ff")).
-			Width(60).
-			Height(15).
-			Padding(1, 2)
-		return scpStyle.Render(m.keysModel.View())
 	}
 
 	styles := theme.DefaultStyles()
@@ -65,12 +33,55 @@ func (m Model) View() string {
 		rightPanel = styles.Panel.Copy().Height(panelHeight).Render("No connections yet — press 'a' to add one")
 	}
 
-	mainView := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
-
 	deleteName := ""
 	if m.confirmDelete && len(m.store.Connections) > 0 {
 		deleteName = m.store.Connections[m.cursor].Name
 	}
+
+	mainView := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
 	statusBar := statusbar.Render(m.width, m.confirmDelete, deleteName)
-	return lipgloss.JoinVertical(lipgloss.Left, mainView, statusBar)
+	fullView := lipgloss.JoinVertical(lipgloss.Left, mainView, statusBar)
+
+	// Build overlay if any panel is active
+	var overlay string
+	if m.showHelp {
+		overlay = keybinds.Render(m.width, m.keybinds)
+	} else if m.showForm {
+		overlay = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#58a6ff")).
+			Width(m.width - 14).
+			Height(m.height - 14).
+			Padding(1, 2).
+			Render(m.form.View())
+	} else if m.showSCP {
+		overlay = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#58a6ff")).
+			Width(60).
+			Height(15).
+			Padding(1, 2).
+			Render(m.scpModel.View())
+	} else if m.showKeys {
+		overlay = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#58a6ff")).
+			Width(60).
+			Height(15).
+			Padding(1, 2).
+			Render(m.keysModel.View())
+	}
+
+		if overlay != "" {
+			return ovl.Composite(
+				overlay,
+				fullView,
+				ovl.Center,
+				ovl.Center,
+				0, 0,
+			)
+		}
+	
+
+	return fullView
 }
