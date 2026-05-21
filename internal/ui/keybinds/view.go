@@ -10,9 +10,17 @@ func Render(width int, keybinds config.Keybinds) string {
 
 	for _, e := range getData(keybinds) {
 		if e.subtitle != "" {
-			output += "\n" + e.subtitle + "\n"
+			output += "\n" + lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#d29922")).
+				PaddingLeft(12).
+				Render(e.subtitle) + "\n\n"
 		} else {
-			output += "[" + e.hotkey + "]  " + e.description + "\n"
+			key := lipgloss.NewStyle().
+				Foreground(lipgloss.Color("#58a6ff")).
+				Width(10).
+				Align(lipgloss.Right).
+				Render(e.hotkey)
+			output += key + "  " + e.description + "\n"
 		}
 	}
 
@@ -80,6 +88,10 @@ func getData(keybinds config.Keybinds) []entry {
 		{
 			hotkey:      keybinds.Networking,
 			description: "Open networking tools",
+		},
+		{
+			hotkey:		keybinds.Test,
+			description:"Test",
 		},
 	}
 	return data

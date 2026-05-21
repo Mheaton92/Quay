@@ -20,6 +20,7 @@ type Keybinds struct {
 	ForceQuit 	string `toml:"force_quit"`
 	NavLeft 	string `toml:"nav_left"`
 	NavRight 	string `toml:"nav_right"`
+	Test	string "toml:test"
 }
 
 func ConfigDir() (string, error) {
@@ -57,5 +58,6 @@ func DefaultKeybinds() Keybinds {
 		ForceQuit:	"ctrl+c",
 		NavLeft:	"left",
 		NavRight:	"right",
+		Test:	"test",
 	}
 }

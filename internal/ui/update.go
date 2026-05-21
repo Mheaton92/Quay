@@ -1,13 +1,14 @@
 package ui
 
 import (
+	"time"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/mheaton92/quay/internal/connection"
 	"github.com/mheaton92/quay/internal/ssh"
 	"github.com/mheaton92/quay/internal/ui/form"
 	uikeys "github.com/mheaton92/quay/internal/ui/keys"
 	"github.com/mheaton92/quay/internal/ui/scp"
-	"time"
 )
 
 type sshExitMsg struct {
@@ -21,43 +22,37 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
 		}
-	if msg.String() == "esc" {
-		if m.showHelp {
-			m.showHelp = false
-			return m, nil
-		}
-		if m.showSCP {
-			m.showSCP = false
-			return m, nil
-		}
-		if m.showForm {
-			m.showForm = false
-			return m, nil
-		}
-		if m.showKeys && m.keysModel.IsInView() {
-			m.showKeys = false
-			return m, nil
-		}
-	}
-
-	if msg.String() == "q" {
-		if m.showHelp {
-			m.showHelp = false
-			return m, nil
-		}
-		if !m.showForm && !m.showSCP && !m.showKeys {
-			return m, tea.Quit
-		}
-	}
-}
-	// SCP gets messages before anything else
-	if m.showSCP {
-		if msg, ok := msg.(tea.KeyMsg); ok {
-			if msg.String() == "esc" {
+		if msg.String() == "esc" {
+			if m.showHelp {
+				m.showHelp = false
+				return m, nil
+			}
+			if m.showSCP {
 				m.showSCP = false
 				return m, nil
 			}
+			if m.showForm {
+				m.showForm = false
+				return m, nil
+			}
+			if m.showKeys && m.keysModel.IsInView() {
+				m.showKeys = false
+				return m, nil
+			}
 		}
+		if msg.String() == m.keybinds.Quit {
+			if m.showHelp {
+				m.showHelp = false
+				return m, nil
+			}
+			if !m.showForm && !m.showSCP && !m.showKeys {
+				return m, tea.Quit
+			}
+		}
+	}
+
+	// SCP gets messages
+	if m.showSCP {
 		var cmd tea.Cmd
 		m.scpModel, cmd = m.scpModel.Update(msg)
 		if m.scpModel != nil && m.scpModel.Done() {
@@ -66,14 +61,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 
-	// Form gets messages next
+	// Form gets messages
 	if m.showForm {
-		if msg, ok := msg.(tea.KeyMsg); ok {
-			if msg.String() == "esc" {
-				m.showForm = false
-				return m, nil
-			}
-		}
 		var cmd tea.Cmd
 		m.form, cmd = m.form.Update(msg)
 		if m.form != nil && m.form.Done() {
@@ -87,25 +76,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 
+	// Keys gets messages
 	if m.showKeys {
-		if msg, ok := msg.(tea.KeyMsg); ok {
-			if msg.String() == "esc" {
-				if m.keysModel.IsInView() {
-					m.showKeys = false
-					return m, nil
-				}
-			}
-		}
 		var cmd tea.Cmd
 		m.keysModel, cmd = m.keysModel.Update(msg)
 		return m, cmd
-	}
-
-	// Main menu key handling
-	if msg, ok := msg.(tea.KeyMsg); ok {
-		if msg.String() == "q" {
-			return m, tea.Quit
-		}
 	}
 
 	switch msg := msg.(type) {
@@ -122,20 +97,20 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 	case tea.KeyMsg:
-		switch msg.String() {
-		case "j", "down":
+		key := msg.String()
+		if key == m.keybinds.Down || key == "down" {
 			if m.cursor < len(m.store.Connections)-1 {
 				m.cursor++
 			}
-		case "k", "up":
+		} else if key == m.keybinds.Up || key == "up" {
 			if m.cursor > 0 {
 				m.cursor--
 			}
-		case "a":
+		} else if key == m.keybinds.Add {
 			m.form = form.NewForm(connection.Connection{})
 			m.showForm = true
 			return m, m.form.Init()
-		case "enter":
+		} else if key == m.keybinds.Connect {
 			if len(m.store.Connections) > 0 {
 				selected := m.store.Connections[m.cursor]
 				sshCmd := ssh.BuildCmd(selected)
@@ -143,11 +118,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					return sshExitMsg{connName: selected.Name, err: err}
 				})
 			}
-		case "d":
+		} else if key == m.keybinds.Delete {
 			if len(m.store.Connections) > 0 {
 				m.confirmDelete = true
 			}
-		case "y":
+		} else if key == "y" {
 			if m.confirmDelete {
 				selected := m.store.Connections[m.cursor]
 				m.store.Delete(selected.Name)
@@ -156,9 +131,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				m.confirmDelete = false
 			}
-		case "n":
+		} else if key == "n" {
 			m.confirmDelete = false
-		case "e":
+		} else if key == m.keybinds.Edit {
 			if len(m.store.Connections) > 0 {
 				selected := m.store.Connections[m.cursor]
 				m.form = form.NewForm(selected)
@@ -166,14 +141,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.showForm = true
 				return m, m.form.Init()
 			}
-		case "s":
+		} else if key == m.keybinds.SCP {
 			if len(m.store.Connections) > 0 {
 				selected := m.store.Connections[m.cursor]
 				m.scpModel = scp.NewSCP(selected)
 				m.showSCP = true
 				return m, m.scpModel.Init()
 			}
-		case "K":
+		} else if key == m.keybinds.Keys {
 			keysModel, err := uikeys.NewKeys(m.store.Connections)
 			if err != nil {
 				m.err = err
@@ -181,7 +156,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.keysModel = keysModel
 				m.showKeys = true
 			}
-		case "?":
+		} else if key == m.keybinds.Help {
 			m.showHelp = !m.showHelp
 		}
 	}
