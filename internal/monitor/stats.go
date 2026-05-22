@@ -7,12 +7,12 @@ import (
 const MaxHistory = 60 // keep last 60 pings
 
 type HostStats struct {
-	Host		string
-	Latency	time.Duration
-	History	[]time.Duration
-	PacketLoss	float64
-	Online 			bool
-	LastChecked	time.Time
+	Host        string
+	Latency     time.Duration
+	History     []time.Duration
+	PacketLoss  float64
+	Online      bool
+	LastChecked time.Time
 }
 
 func (s *HostStats) AddSample(d time.Duration, err error) {

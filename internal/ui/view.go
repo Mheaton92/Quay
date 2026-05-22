@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
 	ovl "github.com/jsdoublel/bubbletea-overlay"
+	"github.com/mheaton92/quay/internal/monitor"
 	"github.com/mheaton92/quay/internal/ui/connectionlist"
 	"github.com/mheaton92/quay/internal/ui/detail"
 	"github.com/mheaton92/quay/internal/ui/keybinds"
 	"github.com/mheaton92/quay/internal/ui/statusbar"
 	"github.com/mheaton92/quay/internal/ui/theme"
-	"github.com/mheaton92/quay/internal/monitor"
 )
 
 func (m Model) View() string {
@@ -28,7 +28,7 @@ func (m Model) View() string {
 	panelHeight := m.height - 5 - netBarHeight
 	if panelHeight < 5 {
 		panelHeight = 5
-		}
+	}
 	leftPanel := connectionlist.Render(m.store.Connections, m.cursor, panelHeight)
 
 	var rightPanel string
@@ -46,30 +46,30 @@ func (m Model) View() string {
 
 	mainView := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
 	statusBar := statusbar.Render(m.width, m.confirmDelete, deleteName)
-		var liveHost string
-		var liveStats *monitor.HostStats
-		if len(m.store.Connections) > 0 {
-			selected := m.store.Connections[m.cursor]
-			alreadyPinned := false
-			for _, h := range m.pinnedHosts {
-				if h == selected.Host {
-					alreadyPinned = true
-					break
-				}
-			}
-			if !alreadyPinned {
-				liveHost = selected.Host
-				liveStats = m.monitor.Stats(selected.Host)
+	var liveHost string
+	var liveStats *monitor.HostStats
+	if len(m.store.Connections) > 0 {
+		selected := m.store.Connections[m.cursor]
+		alreadyPinned := false
+		for _, h := range m.pinnedHosts {
+			if h == selected.Host {
+				alreadyPinned = true
+				break
 			}
 		}
-
-		pinnedStats := make(map[string]*monitor.HostStats)
-		for _, host := range m.pinnedHosts {
-			pinnedStats[host] = m.monitor.Stats(host)
+		if !alreadyPinned {
+			liveHost = selected.Host
+			liveStats = m.monitor.Stats(selected.Host)
 		}
+	}
 
-		netBar := statusbar.RenderNetBar(m.pinnedHosts, pinnedStats, liveHost, liveStats, m.width)
-		
+	pinnedStats := make(map[string]*monitor.HostStats)
+	for _, host := range m.pinnedHosts {
+		pinnedStats[host] = m.monitor.Stats(host)
+	}
+
+	netBar := statusbar.RenderNetBar(m.pinnedHosts, pinnedStats, liveHost, liveStats, m.width)
+
 	fullView := lipgloss.JoinVertical(
 		lipgloss.Left,
 		mainView,
@@ -111,9 +111,9 @@ func (m Model) View() string {
 			BorderForeground(lipgloss.Color("#58a6ff")).
 			Width(60).
 			Height(20).
-			Padding(1,2).
+			Padding(1, 2).
 			Render(m.networkModel.View())
-		}
+	}
 
 	if overlay != "" {
 		return ovl.Composite(

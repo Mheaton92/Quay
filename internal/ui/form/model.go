@@ -10,14 +10,14 @@ import (
 )
 
 type Model struct {
-	conn         connection.Connection
-	portStr      string // temporary string for port input
-	tagsStr      string // temporary string for tags input
-	form         *huh.Form
-	done         bool
-	editing      bool // true if editing an existing connection, false if creating new
-	page         int  // current page index
-	originalName string
+	conn            connection.Connection
+	portStr         string // temporary string for port input
+	tagsStr         string // temporary string for tags input
+	form            *huh.Form
+	done            bool
+	editing         bool // true if editing an existing connection, false if creating new
+	page            int  // current page index
+	originalName    string
 	validationError string
 }
 
@@ -55,13 +55,11 @@ func NewForm(conn connection.Connection) *Model {
 				Title("Name").
 				Placeholder("Alias for this connection").
 				Value(&m.conn.Name),
-	
 
 			huh.NewInput().
 				Title("Host").
 				Placeholder("Hostname or IP address").
 				Value(&m.conn.Host),
-			
 
 			huh.NewInput().Title("User").Value(&m.conn.User),
 

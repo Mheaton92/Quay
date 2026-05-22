@@ -2,17 +2,16 @@ package ui
 
 import (
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/mheaton92/quay/internal/config"
 	"github.com/mheaton92/quay/internal/connection"
+	"github.com/mheaton92/quay/internal/monitor"
 	"github.com/mheaton92/quay/internal/ui/form"
 	uikeys "github.com/mheaton92/quay/internal/ui/keys"
-	"github.com/mheaton92/quay/internal/ui/scp"
-	"github.com/mheaton92/quay/internal/config"
-	"github.com/mheaton92/quay/internal/monitor"
 	"github.com/mheaton92/quay/internal/ui/network"
+	"github.com/mheaton92/quay/internal/ui/scp"
 )
 
 type Panel int
-
 
 const (
 	ConnectionListPanel Panel = 0
@@ -34,11 +33,11 @@ type Model struct {
 	keysModel     *uikeys.Model
 	showKeys      bool
 	keybinds      config.Keybinds
-	showHelp       bool
-	monitor			*monitor.Monitor
-	pinnedHosts		[]string
-	networkModel	*network.Model
-	showNetwork		bool
+	showHelp      bool
+	monitor       *monitor.Monitor
+	pinnedHosts   []string
+	networkModel  *network.Model
+	showNetwork   bool
 }
 
 func NewModel(store connection.Store) Model {
@@ -53,10 +52,10 @@ func NewModel(store connection.Store) Model {
 	pins, _ := config.LoadPins()
 
 	return Model{
-		store:   store,
-		focused: ConnectionListPanel,
-		keybinds: config.DefaultKeybinds(),
-		monitor: m,
+		store:       store,
+		focused:     ConnectionListPanel,
+		keybinds:    config.DefaultKeybinds(),
+		monitor:     m,
 		pinnedHosts: pins,
 	}
 }
@@ -66,16 +65,16 @@ func (m Model) Init() tea.Cmd {
 }
 
 func (m *Model) togglePin(host string) {
-    for i, h := range m.pinnedHosts {
-        if h == host {
-            m.pinnedHosts = append(m.pinnedHosts[:i], m.pinnedHosts[i+1:]...)
-            return
-        }
-    }
-    m.pinnedHosts = append(m.pinnedHosts, host)
+	for i, h := range m.pinnedHosts {
+		if h == host {
+			m.pinnedHosts = append(m.pinnedHosts[:i], m.pinnedHosts[i+1:]...)
+			return
+		}
+	}
+	m.pinnedHosts = append(m.pinnedHosts, host)
 }
 
 func (m *Model) togglePersistentPin(host string) {
-    m.togglePin(host)
+	m.togglePin(host)
 	config.SavePins(m.pinnedHosts)
-    }
+}

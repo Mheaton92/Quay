@@ -12,6 +12,13 @@ func (m *Model) View() string {
     output += styles.Header.Render("NETWORKING TOOLS") + "\n"
     output += "Target: " + m.conn.Name + " (" + m.conn.Host + ")\n\n"
 
+    if m.showInput {
+        output += m.inputLabel + "\n"
+        output += m.input.View() + "\n\n"
+        output += "[enter] run  [esc] cancel"
+        return output
+    }
+
     for i, tool := range m.tools {
         if i == m.cursor {
             output += "▶ " + tool + "\n"

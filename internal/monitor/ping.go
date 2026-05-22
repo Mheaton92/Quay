@@ -1,11 +1,11 @@
 package monitor
 
 import (
-	"time"
 	"fmt"
 	"os/exec"
 	"regexp"
 	"strconv"
+	"time"
 )
 
 type Pinger interface {

@@ -8,8 +8,8 @@ import (
 	"github.com/mheaton92/quay/internal/ssh"
 	"github.com/mheaton92/quay/internal/ui/form"
 	uikeys "github.com/mheaton92/quay/internal/ui/keys"
-	"github.com/mheaton92/quay/internal/ui/scp"
 	"github.com/mheaton92/quay/internal/ui/network"
+	"github.com/mheaton92/quay/internal/ui/scp"
 )
 
 type sshExitMsg struct {
@@ -181,14 +181,14 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else if key == m.keybinds.Help {
 			m.showHelp = !m.showHelp
 		} else if key == m.keybinds.PinSession {
-		if len(m.store.Connections) > 0 {
-			host := m.store.Connections[m.cursor].Host
-			m.togglePin(host)
-		}
-	} else if key == m.keybinds.PinPersistent {
-		if len(m.store.Connections) > 0 {
-			host := m.store.Connections[m.cursor].Host
-			m.togglePersistentPin(host)
+			if len(m.store.Connections) > 0 {
+				host := m.store.Connections[m.cursor].Host
+				m.togglePin(host)
+			}
+		} else if key == m.keybinds.PinPersistent {
+			if len(m.store.Connections) > 0 {
+				host := m.store.Connections[m.cursor].Host
+				m.togglePersistentPin(host)
 			}
 		} else if key == m.keybinds.Networking {
 			if len(m.store.Connections) > 0 {
