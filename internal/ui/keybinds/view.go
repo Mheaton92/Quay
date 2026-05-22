@@ -90,8 +90,12 @@ func getData(keybinds config.Keybinds) []entry {
 			description: "Open networking tools",
 		},
 		{
-			hotkey:		keybinds.Test,
-			description:"Test",
+			hotkey:		keybinds.PinSession,
+			description:"Pin current host to bottom bar (session)",
+		},
+		{
+			hotkey:		keybinds.PinPersistent,
+			description: "Pin current host to bottom bar (persistent)",
 		},
 	}
 	return data

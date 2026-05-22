@@ -3,12 +3,13 @@ package ui
 import (
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
+	ovl "github.com/jsdoublel/bubbletea-overlay"
 	"github.com/mheaton92/quay/internal/ui/connectionlist"
 	"github.com/mheaton92/quay/internal/ui/detail"
 	"github.com/mheaton92/quay/internal/ui/keybinds"
 	"github.com/mheaton92/quay/internal/ui/statusbar"
 	"github.com/mheaton92/quay/internal/ui/theme"
-	ovl "github.com/jsdoublel/bubbletea-overlay"
+	"github.com/mheaton92/quay/internal/monitor"
 )
 
 func (m Model) View() string {
@@ -20,9 +21,14 @@ func (m Model) View() string {
 			Render("\n\nTerminal too small\nMinimum size: 70x20\nCurrent: " +
 				fmt.Sprintf("%dx%d", m.width, m.height))
 	}
+	netBarHeight := 5
+	netBarHeight += len(m.pinnedHosts) * 5
 
 	styles := theme.DefaultStyles()
-	panelHeight := m.height - 10
+	panelHeight := m.height - 5 - netBarHeight
+	if panelHeight < 5 {
+		panelHeight = 5
+		}
 	leftPanel := connectionlist.Render(m.store.Connections, m.cursor, panelHeight)
 
 	var rightPanel string
@@ -40,18 +46,36 @@ func (m Model) View() string {
 
 	mainView := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
 	statusBar := statusbar.Render(m.width, m.confirmDelete, deleteName)
-	var netBar string
-	if len(m.store.Connections) > 0 {
-		selected := m.store.Connections[m.cursor]
-		stats := m.monitor.Stats(selected.Host)
-		netBar = statusbar.RenderNetBar(selected.Host, stats, m.width)
-	}
+		var liveHost string
+		var liveStats *monitor.HostStats
+		if len(m.store.Connections) > 0 {
+			selected := m.store.Connections[m.cursor]
+			alreadyPinned := false
+			for _, h := range m.pinnedHosts {
+				if h == selected.Host {
+					alreadyPinned = true
+					break
+				}
+			}
+			if !alreadyPinned {
+				liveHost = selected.Host
+				liveStats = m.monitor.Stats(selected.Host)
+			}
+		}
+
+		pinnedStats := make(map[string]*monitor.HostStats)
+		for _, host := range m.pinnedHosts {
+			pinnedStats[host] = m.monitor.Stats(host)
+		}
+
+		netBar := statusbar.RenderNetBar(m.pinnedHosts, pinnedStats, liveHost, liveStats, m.width)
+		
 	fullView := lipgloss.JoinVertical(
 		lipgloss.Left,
 		mainView,
 		netBar,
 		statusBar,
-		)
+	)
 
 	// Build overlay if any panel is active
 	var overlay string
@@ -61,8 +85,8 @@ func (m Model) View() string {
 		overlay = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("#58a6ff")).
-			Width(m.width - 14).
-			Height(m.height - 14).
+			Width(m.width-14).
+			Height(m.height-14).
 			Padding(1, 2).
 			Render(m.form.View())
 	} else if m.showSCP {
@@ -83,16 +107,15 @@ func (m Model) View() string {
 			Render(m.keysModel.View())
 	}
 
-		if overlay != "" {
-			return ovl.Composite(
-				overlay,
-				fullView,
-				ovl.Center,
-				ovl.Center,
-				0, 0,
-			)
-		}
-	
+	if overlay != "" {
+		return ovl.Composite(
+			overlay,
+			fullView,
+			ovl.Center,
+			ovl.Center,
+			0, 0,
+		)
+	}
 
 	return fullView
 }

@@ -2,26 +2,22 @@ package statusbar
 
 import (
     "fmt"
+    "strings"
     "github.com/charmbracelet/lipgloss"
     "github.com/mheaton92/quay/internal/monitor"
 )
 
-func RenderNetBar(host string, stats *monitor.HostStats, width int) string {
+func renderHostLine(label string, host string, stats *monitor.HostStats, width int) string {
     if stats == nil {
         return lipgloss.NewStyle().
-            Border(lipgloss.RoundedBorder()).
-            BorderForeground(lipgloss.Color("#58a6ff")).
-            Width(width - 2).
-            Height(3).
-            Padding(0, 1).
-            Render("Waiting for stats...")
+            Foreground(lipgloss.Color("#484f58")).
+            Render(label + "  " + host + "  waiting...")
     }
 
-    sparkWidth := width - 50
+    sparkWidth := width - 60
     if sparkWidth < 10 {
         sparkWidth = 10
     }
-
     spark := monitor.Sparkline(stats.History, sparkWidth)
 
     var latency string
@@ -41,24 +37,54 @@ func RenderNetBar(host string, stats *monitor.HostStats, width int) string {
         lossColor = lipgloss.Color("#f85149")
     }
 
-    header := lipgloss.NewStyle().
+    labelStyle := lipgloss.NewStyle().
         Foreground(lipgloss.Color("#58a6ff")).
         Bold(true).
-        Render("● LIVE  " + host)
+        Width(8)
 
-    statsLine := fmt.Sprintf("  latency: %-8s  loss: %-8s  %s",
-        latency,
-        fmt.Sprintf("%.0f%%", stats.PacketLoss),
-        spark)
+    hostStyle := lipgloss.NewStyle().
+        Foreground(lipgloss.Color("#c9d1d9")).
+        Width(14)
 
-    content := header + "\n" +
-        lipgloss.NewStyle().Foreground(lossColor).Render(statsLine)
+    latencyStyle := lipgloss.NewStyle().
+        Foreground(lipgloss.Color("#58a6ff")).
+        Width(10)
+
+    lossStyle := lipgloss.NewStyle().
+        Foreground(lossColor).
+        Width(10)
+
+    sparkStyle := lipgloss.NewStyle().
+        Foreground(lipgloss.Color("#58a6ff"))
+
+    return labelStyle.Render(label) +
+        hostStyle.Render(host) +
+        latencyStyle.Render(latency) +
+        lossStyle.Render(fmt.Sprintf("%.0f%% loss", stats.PacketLoss)) +
+        sparkStyle.Render(spark)
+}
+
+func RenderNetBar(pinnedHosts []string, pinnedStats map[string]*monitor.HostStats, liveHost string, liveStats *monitor.HostStats, width int) string {
+    separator := strings.Repeat("─", width-4)
+    var lines []string
+
+    for _, host := range pinnedHosts {
+        lines = append(lines, renderHostLine("PINNED", host, pinnedStats[host], width))
+    }
+
+    if liveHost != "" {
+        if len(lines) > 0 {
+            lines = append(lines, separator)
+        }
+        lines = append(lines, renderHostLine("LIVE", liveHost, liveStats, width))
+    }
+
+    content := strings.Join(lines, "\n")
 
     return lipgloss.NewStyle().
         Border(lipgloss.RoundedBorder()).
         BorderForeground(lipgloss.Color("#58a6ff")).
         Width(width - 2).
-        Height(3).
         Padding(0, 1).
         Render(content)
 }

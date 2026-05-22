@@ -20,7 +20,8 @@ type Keybinds struct {
 	ForceQuit 	string `toml:"force_quit"`
 	NavLeft 	string `toml:"nav_left"`
 	NavRight 	string `toml:"nav_right"`
-	Test	string "toml:test"
+	PinSession	string `tom1:"pin_session"`
+	PinPersistent string `tom1:"pin_persistent"`
 }
 
 func ConfigDir() (string, error) {
@@ -58,6 +59,7 @@ func DefaultKeybinds() Keybinds {
 		ForceQuit:	"ctrl+c",
 		NavLeft:	"left",
 		NavRight:	"right",
-		Test:	"test",
+		PinSession:	"p",
+		PinPersistent: "P",
 	}
 }

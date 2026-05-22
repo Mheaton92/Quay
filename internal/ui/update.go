@@ -169,6 +169,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		} else if key == m.keybinds.Help {
 			m.showHelp = !m.showHelp
+		} else if key == m.keybinds.PinSession {
+		if len(m.store.Connections) > 0 {
+			host := m.store.Connections[m.cursor].Host
+			m.togglePin(host)
+		}
+	} else if key == m.keybinds.PinPersistent {
+		if len(m.store.Connections) > 0 {
+			host := m.store.Connections[m.cursor].Host
+			m.togglePersistentPin(host)
+			}
 		}
 	}
 	return m, nil

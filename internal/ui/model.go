@@ -35,6 +35,7 @@ type Model struct {
 	keybinds      config.Keybinds
 	showHelp       bool
 	monitor			*monitor.Monitor
+	pinnedHosts		[]string
 }
 
 func NewModel(store connection.Store) Model {
@@ -55,4 +56,19 @@ func NewModel(store connection.Store) Model {
 
 func (m Model) Init() tea.Cmd {
 	return tick()
+}
+
+func (m *Model) togglePin(host string) {
+    for i, h := range m.pinnedHosts {
+        if h == host {
+            m.pinnedHosts = append(m.pinnedHosts[:i], m.pinnedHosts[i+1:]...)
+            return
+        }
+    }
+    m.pinnedHosts = append(m.pinnedHosts, host)
+}
+
+func (m *Model) togglePersistentPin(host string) {
+    m.togglePin(host) // also pins for session
+    // persistent pin storage comes later
 }
