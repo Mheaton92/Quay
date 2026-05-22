@@ -7,6 +7,7 @@ import (
 	uikeys "github.com/mheaton92/quay/internal/ui/keys"
 	"github.com/mheaton92/quay/internal/ui/scp"
 	"github.com/mheaton92/quay/internal/config"
+	"github.com/mheaton92/quay/internal/monitor"
 )
 
 type Panel int
@@ -33,16 +34,25 @@ type Model struct {
 	showKeys      bool
 	keybinds      config.Keybinds
 	showHelp       bool
+	monitor			*monitor.Monitor
 }
 
 func NewModel(store connection.Store) Model {
+	m := monitor.NewMonitor(false) // false = use exec ping
+	m.Start()
+
+	for _, conn := range store.Connections {
+		m.Add(conn.Host)
+	}
+
 	return Model{
 		store:   store,
 		focused: ConnectionListPanel,
 		keybinds: config.DefaultKeybinds(),
+		monitor: m,
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	return tick()
 }

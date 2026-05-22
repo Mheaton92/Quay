@@ -22,7 +22,7 @@ func (m Model) View() string {
 	}
 
 	styles := theme.DefaultStyles()
-	panelHeight := m.height - 5
+	panelHeight := m.height - 10
 	leftPanel := connectionlist.Render(m.store.Connections, m.cursor, panelHeight)
 
 	var rightPanel string
@@ -40,7 +40,18 @@ func (m Model) View() string {
 
 	mainView := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
 	statusBar := statusbar.Render(m.width, m.confirmDelete, deleteName)
-	fullView := lipgloss.JoinVertical(lipgloss.Left, mainView, statusBar)
+	var netBar string
+	if len(m.store.Connections) > 0 {
+		selected := m.store.Connections[m.cursor]
+		stats := m.monitor.Stats(selected.Host)
+		netBar = statusbar.RenderNetBar(selected.Host, stats, m.width)
+	}
+	fullView := lipgloss.JoinVertical(
+		lipgloss.Left,
+		mainView,
+		netBar,
+		statusBar,
+		)
 
 	// Build overlay if any panel is active
 	var overlay string

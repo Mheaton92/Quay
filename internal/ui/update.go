@@ -16,6 +16,14 @@ type sshExitMsg struct {
 	err      error
 }
 
+type tickMsg time.Time
+
+func tick() tea.Cmd {
+	return tea.Tick(time.Second, func(t time.Time) tea.Msg {
+		return tickMsg(t)
+	})
+}
+
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	// ctrl+c always quits
 	if msg, ok := msg.(tea.KeyMsg); ok {
@@ -70,6 +78,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.store.Edit(m.form.OriginalName(), m.form.Connection())
 			} else {
 				m.store.Add(m.form.Connection())
+				m.monitor.Add(m.form.Connection().Host)
 			}
 			m.showForm = false
 		}
@@ -84,6 +93,8 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
+	case tickMsg:
+		return m, tick()
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
 		m.height = msg.Height
