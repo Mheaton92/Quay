@@ -9,6 +9,7 @@ import (
 	"github.com/mheaton92/quay/internal/ui/form"
 	uikeys "github.com/mheaton92/quay/internal/ui/keys"
 	"github.com/mheaton92/quay/internal/ui/scp"
+	"github.com/mheaton92/quay/internal/ui/network"
 )
 
 type sshExitMsg struct {
@@ -41,6 +42,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if m.showForm {
 				m.showForm = false
+				return m, nil
+			}
+			if m.showNetwork {
+				m.showNetwork = false
 				return m, nil
 			}
 			if m.showKeys && m.keysModel.IsInView() {
@@ -89,6 +94,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.showKeys {
 		var cmd tea.Cmd
 		m.keysModel, cmd = m.keysModel.Update(msg)
+		return m, cmd
+	}
+
+	if m.showNetwork {
+		var cmd tea.Cmd
+		m.networkModel, cmd = m.networkModel.Update(msg)
 		return m, cmd
 	}
 
@@ -178,6 +189,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		if len(m.store.Connections) > 0 {
 			host := m.store.Connections[m.cursor].Host
 			m.togglePersistentPin(host)
+			}
+		} else if key == m.keybinds.Networking {
+			if len(m.store.Connections) > 0 {
+				selected := m.store.Connections[m.cursor]
+				m.networkModel = network.NewNetwork(selected)
+				m.showNetwork = true
 			}
 		}
 	}

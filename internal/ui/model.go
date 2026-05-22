@@ -8,6 +8,7 @@ import (
 	"github.com/mheaton92/quay/internal/ui/scp"
 	"github.com/mheaton92/quay/internal/config"
 	"github.com/mheaton92/quay/internal/monitor"
+	"github.com/mheaton92/quay/internal/ui/network"
 )
 
 type Panel int
@@ -36,6 +37,8 @@ type Model struct {
 	showHelp       bool
 	monitor			*monitor.Monitor
 	pinnedHosts		[]string
+	networkModel	*network.Model
+	showNetwork		bool
 }
 
 func NewModel(store connection.Store) Model {

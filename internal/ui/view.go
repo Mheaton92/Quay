@@ -105,7 +105,15 @@ func (m Model) View() string {
 			Height(15).
 			Padding(1, 2).
 			Render(m.keysModel.View())
-	}
+	} else if m.showNetwork {
+		overlay = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#58a6ff")).
+			Width(60).
+			Height(20).
+			Padding(1,2).
+			Render(m.networkModel.View())
+		}
 
 	if overlay != "" {
 		return ovl.Composite(
