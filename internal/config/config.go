@@ -1,6 +1,9 @@
 package config
 
-import "os"
+import (
+	"os"
+	"encoding/json"
+)
 
 type Keybinds struct {
 	Connect 	string `toml:"connect"`
@@ -62,4 +65,40 @@ func DefaultKeybinds() Keybinds {
 		PinSession:	"p",
 		PinPersistent: "P",
 	}
+}
+
+func PinsFile() (string, error) {
+    dir, err := ConfigDir()
+    if err != nil {
+        return "", err
+    }
+    return dir + "/pins.json", nil
+}
+
+func LoadPins() ([]string, error) {
+    path, err := PinsFile()
+    if err != nil {
+        return nil, err
+    }
+    data, err := os.ReadFile(path)
+    if err != nil {
+        return []string{}, nil // no pins file yet is fine
+    }
+    var pins []string
+    if err := json.Unmarshal(data, &pins); err != nil {
+        return nil, err
+    }
+    return pins, nil
+}
+
+func SavePins(pins []string) error {
+    path, err := PinsFile()
+    if err != nil {
+        return err
+    }
+    data, err := json.Marshal(pins)
+    if err != nil {
+        return err
+    }
+    return os.WriteFile(path, data, 0600)
 }

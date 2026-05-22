@@ -46,11 +46,15 @@ func NewModel(store connection.Store) Model {
 		m.Add(conn.Host)
 	}
 
+	// Load persistent pins
+	pins, _ := config.LoadPins()
+
 	return Model{
 		store:   store,
 		focused: ConnectionListPanel,
 		keybinds: config.DefaultKeybinds(),
 		monitor: m,
+		pinnedHosts: pins,
 	}
 }
 
@@ -69,6 +73,6 @@ func (m *Model) togglePin(host string) {
 }
 
 func (m *Model) togglePersistentPin(host string) {
-    m.togglePin(host) // also pins for session
-    // persistent pin storage comes later
-}
+    m.togglePin(host)
+	config.SavePins(m.pinnedHosts)
+    }
