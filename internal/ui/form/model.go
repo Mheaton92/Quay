@@ -51,23 +51,12 @@ func NewForm(conn connection.Connection) *Model {
 
 	m.form = huh.NewForm(
 		huh.NewGroup(
-			huh.NewInput().
-				Title("Name").
-				Placeholder("Alias for this connection").
-				Value(&m.conn.Name),
-
-			huh.NewInput().
-				Title("Host").
-				Placeholder("Hostname or IP address").
-				Value(&m.conn.Host),
-
+			huh.NewInput().Title("Name").Placeholder("Alias for this connection").Value(&m.conn.Name),
+			huh.NewInput().Title("Host").Placeholder("Hostname or IP address").Value(&m.conn.Host),
 			huh.NewInput().Title("User").Value(&m.conn.User),
-
-			huh.NewInput().
-				Title("Port").
-				Value(&m.portStr),
-
+			huh.NewInput().Title("Port").Value(&m.portStr),
 			huh.NewInput().Title("Key").Placeholder(defaultKey).Value(&m.conn.IdentityFile),
+			huh.NewInput().Title("MAC Address").Placeholder("aa:bb:cc:dd:ee:ff").Value(&m.conn.MACAddress),
 		),
 		huh.NewGroup(
 			huh.NewInput().Title("ProxyJump").Value(&m.conn.ProxyJump),

@@ -15,6 +15,7 @@ type Connection struct {
 	User         string
 	Port         int
 	IdentityFile string
+	MACAddress	 string
 
 	// Connection
 	ProxyJump           string

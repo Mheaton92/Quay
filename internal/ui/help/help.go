@@ -77,7 +77,14 @@ var fieldHelpData = map[string]FieldHelp{
 		Default:     "~/.ssh/id_rsa, ~/.ssh/id_ed25519, etc.",
 		Category:    "Basic",
 	},
-
+  "MACAddress": {
+		Field:       "MAC Address",
+		Description: "Hardware MAC address of the machine for Wake on LAN.",
+		Syntax:      "xx:xx:xx:xx:xx:xx",
+		Examples:    []string{"aa:bb:cc:dd:ee:ff"},
+		Default:     "none",
+		Category:    "Basic",
+	}, 
 	// Connection fields
 	"ProxyJump": {
 		Field:       "ProxyJump",
