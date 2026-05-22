@@ -26,7 +26,12 @@ func RenderNetBar(host string, stats *monitor.HostStats, width int) string {
 
     var latency string
     if stats.Online {
-        latency = fmt.Sprintf("%dms", stats.Latency.Milliseconds())
+        ms := float64(stats.Latency.Microseconds()) / 1000.0
+        if ms < 1 {
+            latency = fmt.Sprintf("%.2fms", ms)
+        } else {
+            latency = fmt.Sprintf("%.0fms", ms)
+        }
     } else {
         latency = "offline"
     }
