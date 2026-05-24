@@ -27,19 +27,22 @@ type Model struct {
 	cursor        int
 	form          *form.Model
 	showForm      bool
+	formActive    bool
 	confirmDelete bool
 	scpModel      *scp.Model
 	showSCP       bool
+	scpActive     bool
 	keysModel     *uikeys.Model
 	showKeys      bool
+	keysActive    bool
 	keybinds      config.Keybinds
 	showHelp      bool
 	monitor       *monitor.Monitor
 	pinnedHosts   []string
 	networkModel  *network.Model
 	showNetwork   bool
-	activePanel		string
 	networkActive bool
+	activePanel   string
 }
 
 func NewModel(store connection.Store) Model {

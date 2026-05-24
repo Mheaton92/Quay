@@ -52,6 +52,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.networkActive = false
 				return m, nil
 			}
+			if m.formActive {
+				m.formActive = false
+				return m, nil
+			}
+			if m.scpActive {
+				m.scpActive = false
+				return m, nil
+			}
+			if m.keysActive && m.keysModel.IsInView() {
+				m.keysActive = false
+				return m, nil
+			}
 			if m.showKeys && m.keysModel.IsInView() {
 				m.showKeys = false
 				return m, nil
@@ -113,6 +125,36 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.networkModel, cmd = m.networkModel.Update(msg)
 		return m, cmd
 	}
+
+	if m.formActive {
+		var cmd tea.Cmd
+		m.form, cmd = m.form.Update(msg)
+		if m.form != nil && m.form.Done() {
+			if m.form.IsEditing() {
+				m.store.Edit(m.form.OriginalName(), m.form.Connection())
+			} else {
+				m.store.Add(m.form.Connection())
+				m.monitor.Add(m.form.Connection().Host)
+			}
+			m.formActive = false
+		}
+		return m, cmd
+	}
+
+	if m.scpActive {
+		var cmd tea.Cmd
+		m.scpModel, cmd = m.scpModel.Update(msg)
+		if m.scpModel != nil && m.scpModel.Done() {
+			m.scpActive = false
+		}
+		return m, cmd
+	}
+	if m.keysActive {
+		var cmd tea.Cmd
+		m.keysModel, cmd = m.keysModel.Update(msg)
+		return m, cmd
+	}
+
 	switch msg := msg.(type) {
 	case tickMsg:
 		return m, tick()
@@ -140,7 +182,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		} else if key == m.keybinds.Add {
 			m.form = form.NewForm(connection.Connection{})
-			m.showForm = true
+			if m.width >= 100 {
+				m.formActive = true
+				m.showForm = false
+			} else {
+				m.showForm = true
+			}
 			return m, m.form.Init()
 		} else if key == m.keybinds.Connect {
 			if len(m.store.Connections) > 0 {
@@ -166,27 +213,44 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		} else if key == "n" {
 			m.confirmDelete = false
 		} else if key == m.keybinds.Edit {
-			if len(m.store.Connections) > 0 {
-				selected := m.store.Connections[m.cursor]
-				m.form = form.NewForm(selected)
-				m.form.SetEditing(true)
-				m.showForm = true
-				return m, m.form.Init()
-			}
+    if len(m.store.Connections) > 0 {
+        selected := m.store.Connections[m.cursor]
+        m.form = form.NewForm(selected)
+        m.form.SetEditing(true)
+        if m.width >= 100 {
+            m.formActive = true
+            m.showForm = false
+        } else {
+            m.showForm = true
+        }
+        return m, m.form.Init()
+    }
+
 		} else if key == m.keybinds.SCP {
 			if len(m.store.Connections) > 0 {
 				selected := m.store.Connections[m.cursor]
 				m.scpModel = scp.NewSCP(selected)
-				m.showSCP = true
+				if m.width >= 100 {
+					m.scpActive = true
+					m.showSCP = false
+				} else {
+					m.showSCP = true
+				}
 				return m, m.scpModel.Init()
 			}
+
 		} else if key == m.keybinds.Keys {
 			keysModel, err := uikeys.NewKeys(m.store.Connections)
 			if err != nil {
 				m.err = err
 			} else {
 				m.keysModel = keysModel
-				m.showKeys = true
+				if m.width >= 100 {
+					m.keysActive = true
+					m.showKeys = false
+				} else {
+					m.showKeys = true
+				}
 			}
 		} else if key == m.keybinds.Help {
 			m.showHelp = !m.showHelp
@@ -201,18 +265,19 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.togglePersistentPin(host)
 			}
 		} else if key == m.keybinds.Networking {
-    if len(m.store.Connections) > 0 {
-        selected := m.store.Connections[m.cursor]
-        m.networkModel = network.NewNetwork(selected)
-        if m.width >= 100 {
-            // wide screen — show in active panel
-						m.networkActive = true
-            m.showNetwork = false
-        } else {
-            // narrow screen — show as overlay
-            m.showNetwork = true
-        }
-    }		} else if key == m.keybinds.Import {
+			if len(m.store.Connections) > 0 {
+				selected := m.store.Connections[m.cursor]
+				m.networkModel = network.NewNetwork(selected)
+				if m.width >= 100 {
+					// wide screen — show in active panel
+					m.networkActive = true
+					m.showNetwork = false
+				} else {
+					// narrow screen — show as overlay
+					m.showNetwork = true
+				}
+			}
+		} else if key == m.keybinds.Import {
 			imported, err := ssh.ImportSSHConfig()
 			if err != nil {
 				m.err = err

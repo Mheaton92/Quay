@@ -52,6 +52,16 @@ func (m Model) View() string {
 						Render(m.networkModel.View())
 				}
 			}
+			if m.formActive && m.width >= 100 {
+				activeContent = m.form.View()
+			}
+			if m.scpActive && m.width >= 100 {
+				activeContent = m.scpModel.View()
+			}
+			if m.keysActive && m.width >= 100 {
+				activeContent = m.keysModel.View()
+			}
+
 			if activeContent == "" {
 				activeContent = lipgloss.NewStyle().
 					Foreground(lipgloss.Color("#484f58")).
@@ -59,7 +69,7 @@ func (m Model) View() string {
 			}
 			activeBox := lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("58a6ff")).
+				BorderForeground(lipgloss.Color("#58a6ff")).
 				Width(colWidth).
 				Height(panelHeight).
 				Padding(0, 1).
