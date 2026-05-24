@@ -196,6 +196,16 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.networkModel = network.NewNetwork(selected)
 				m.showNetwork = true
 			}
+		} else if key == m.keybinds.Import {
+			imported, err := ssh.ImportSSHConfig()
+			if err != nil {
+				m.err = err
+			} else {
+				for _, conn := range imported {
+					m.store.Add(conn)
+					m.monitor.Add(conn.Host)
+				}
+			}
 		}
 	}
 	return m, nil

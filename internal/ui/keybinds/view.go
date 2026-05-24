@@ -97,6 +97,10 @@ func getData(keybinds config.Keybinds) []entry {
 			hotkey:      keybinds.PinPersistent,
 			description: "Pin current host to bottom bar (persistent)",
 		},
+		{
+			hotkey:      keybinds.Import,
+			description: "Import connections from ~/.ssh/config",
+		},
 	}
 	return data
 }

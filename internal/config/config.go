@@ -25,6 +25,7 @@ type Keybinds struct {
 	NavRight      string `toml:"nav_right"`
 	PinSession    string `tom1:"pin_session"`
 	PinPersistent string `tom1:"pin_persistent"`
+	Import				string `toml:"import"`
 }
 
 func ConfigDir() (string, error) {
@@ -64,6 +65,7 @@ func DefaultKeybinds() Keybinds {
 		NavRight:      "right",
 		PinSession:    "p",
 		PinPersistent: "P",
+		Import:				 "i",
 	}
 }
 
