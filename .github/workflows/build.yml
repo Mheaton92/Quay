@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -29,5 +32,5 @@ jobs:
       - name: Build macOS arm64
         run: GOOS=darwin GOARCH=arm64 go build -o quay-darwin-arm64 ./cmd/quay
 
-      - name: Build Android arm64
-        run: GOOS=android GOARCH=arm64 go build -o quay-android-arm64 ./cmd/quay
+      - name: Build Windows amd64
+        run: GOOS=windows GOARCH=amd64 go build -o quay-windows-amd64.exe ./cmd/quay
