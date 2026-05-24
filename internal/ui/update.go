@@ -48,6 +48,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.showNetwork = false
 				return m, nil
 			}
+			if m.networkActive {
+				m.networkActive = false
+				return m, nil
+			}
 			if m.showKeys && m.keysModel.IsInView() {
 				m.showKeys = false
 				return m, nil
@@ -100,6 +104,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if m.showNetwork {
 		var cmd tea.Cmd
 		m.networkModel, cmd = m.networkModel.Update(msg)
+		m.activePanel = m.networkModel.Result()
 		return m, cmd
 	}
 
@@ -191,12 +196,18 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.togglePersistentPin(host)
 			}
 		} else if key == m.keybinds.Networking {
-			if len(m.store.Connections) > 0 {
-				selected := m.store.Connections[m.cursor]
-				m.networkModel = network.NewNetwork(selected)
-				m.showNetwork = true
-			}
-		} else if key == m.keybinds.Import {
+    if len(m.store.Connections) > 0 {
+        selected := m.store.Connections[m.cursor]
+        m.networkModel = network.NewNetwork(selected)
+        if m.width >= 100 {
+            // wide screen — show in active panel
+						m.networkActive = true
+            m.showNetwork = false
+        } else {
+            // narrow screen — show as overlay
+            m.showNetwork = true
+        }
+    }		} else if key == m.keybinds.Import {
 			imported, err := ssh.ImportSSHConfig()
 			if err != nil {
 				m.err = err

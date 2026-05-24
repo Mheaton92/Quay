@@ -39,6 +39,7 @@ type Model struct {
 	networkModel  *network.Model
 	showNetwork   bool
 	activePanel		string
+	networkActive bool
 }
 
 func NewModel(store connection.Store) Model {

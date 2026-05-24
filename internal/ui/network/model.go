@@ -58,3 +58,7 @@ func (m *Model) Init() tea.Cmd {
 func (m *Model) Done() bool {
 	return false
 }
+
+func (m *Model) Result() string {
+	return m.result
+}

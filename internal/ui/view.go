@@ -42,26 +42,36 @@ func (m Model) View() string {
 			homelabPanel := detail.RenderHomelab(selected, colWidth, panelHeight)
 
 			activeContent := m.activePanel
-			if activeContent == ""  {
+			if m.networkModel != nil && m.width >= 100 {
+				if m.networkActive {
+					activeContent = m.networkModel.View()
+				} else {
+					// Dimmed when not active
+					activeContent = lipgloss.NewStyle().
+						Foreground(lipgloss.Color("#484f58")).
+						Render(m.networkModel.View())
+				}
+			}
+			if activeContent == "" {
 				activeContent = lipgloss.NewStyle().
 					Foreground(lipgloss.Color("#484f58")).
 					Render("no active tool")
 			}
 			activeBox := lipgloss.NewStyle().
-					Border(lipgloss.RoundedBorder()).
-					BorderForeground(lipgloss.Color("58a6ff")).
-					Width(colWidth).
-					Height(panelHeight).
-					Padding(0,1).
-					Render(activeContent)
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("58a6ff")).
+				Width(colWidth).
+				Height(panelHeight).
+				Padding(0, 1).
+				Render(activeContent)
 
-				rightPanel = lipgloss.JoinHorizontal(lipgloss.Top, connectionPanel, homelabPanel, activeBox)
+			rightPanel = lipgloss.JoinHorizontal(lipgloss.Top, connectionPanel, homelabPanel, activeBox)
 		} else {
-				rightPanel = detail.Render(selected, m.width-lipgloss.Width(leftPanel), panelHeight)
+			rightPanel = detail.Render(selected, m.width-lipgloss.Width(leftPanel), panelHeight)
 		}
-} else {
-	rightPanel = styles.Panel.Copy().Height(panelHeight).Render("No connections yet - press 'a' to add one")
-}
+	} else {
+		rightPanel = styles.Panel.Copy().Height(panelHeight).Render("No connections yet - press 'a' to add one")
+	}
 
 	deleteName := ""
 	if m.confirmDelete && len(m.store.Connections) > 0 {
