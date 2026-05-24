@@ -35,33 +35,33 @@ func (m Model) View() string {
 	if len(m.store.Connections) > 0 {
 		selected := m.store.Connections[m.cursor]
 		if m.width >= 100 {
-			// Three column layout
-			colWidth := (m.width - lipgloss.Width(leftPanel) - 6) / 3
+			// Stacked layout — connection+homelab stacked, active panel wider
+			infoWidth := (m.width - lipgloss.Width(leftPanel)) / 3
+			activeWidth := (m.width - lipgloss.Width(leftPanel)) - infoWidth - 4
 
-			connectionPanel := detail.RenderConnection(selected, colWidth, panelHeight)
-			homelabPanel := detail.RenderHomelab(selected, colWidth, panelHeight)
+			connectionPanel := detail.RenderConnection(selected, infoWidth, panelHeight/2)
+			homelabPanel := detail.RenderHomelab(selected, infoWidth, panelHeight/2)
+			stackedInfo := lipgloss.JoinVertical(lipgloss.Left, connectionPanel, homelabPanel)
 
 			activeContent := m.activePanel
-			if m.networkModel != nil && m.width >= 100 {
+			if m.networkModel != nil {
 				if m.networkActive {
 					activeContent = m.networkModel.View()
 				} else {
-					// Dimmed when not active
 					activeContent = lipgloss.NewStyle().
 						Foreground(lipgloss.Color("#484f58")).
 						Render(m.networkModel.View())
 				}
 			}
-			if m.formActive && m.width >= 100 {
+			if m.formActive {
 				activeContent = m.form.View()
 			}
-			if m.scpActive && m.width >= 100 {
+			if m.scpActive {
 				activeContent = m.scpModel.View()
 			}
-			if m.keysActive && m.width >= 100 {
+			if m.keysActive {
 				activeContent = m.keysModel.View()
 			}
-
 			if activeContent == "" {
 				activeContent = lipgloss.NewStyle().
 					Foreground(lipgloss.Color("#484f58")).
@@ -70,12 +70,12 @@ func (m Model) View() string {
 			activeBox := lipgloss.NewStyle().
 				Border(lipgloss.RoundedBorder()).
 				BorderForeground(lipgloss.Color("#58a6ff")).
-				Width(colWidth).
+				Width(activeWidth).
 				Height(panelHeight).
 				Padding(0, 1).
 				Render(activeContent)
 
-			rightPanel = lipgloss.JoinHorizontal(lipgloss.Top, connectionPanel, homelabPanel, activeBox)
+			rightPanel = lipgloss.JoinHorizontal(lipgloss.Top, stackedInfo, activeBox)
 		} else {
 			rightPanel = detail.Render(selected, m.width-lipgloss.Width(leftPanel), panelHeight)
 		}
