@@ -12,6 +12,16 @@ func (m *Model) View() string {
     output += styles.Header.Render("NETWORKING TOOLS") + "\n"
     output += "Target: " + m.conn.Name + " (" + m.conn.Host + ")\n\n"
 
+    if m.showHelp {
+        help := toolHelpData[Tool(m.cursor)]
+        output += styles.Header.Render(help.name) + "\n\n"
+        output += "What it does:\n  " + help.description + "\n\n"
+        output += "How to use:\n  " + help.usage + "\n\n"
+        output += "When to use it:\n  " + help.whyUseIt + "\n\n"
+        output += "[?] close help"
+        return output
+    }
+
     if m.showInput {
         output += m.inputLabel + "\n"
         output += m.input.View() + "\n\n"

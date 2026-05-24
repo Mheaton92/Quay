@@ -16,6 +16,11 @@ type PortResult struct {
 	Banner string
 }
 
+type BandwidthResult struct {
+    Download float64 // MB/s
+    Upload   float64 // MB/s
+}
+
 func ScanPorts(host string, ports []int, timeout time.Duration) []PortResult {
 	results := make([]PortResult, 0, len(ports))
 	for _, port := range ports {
@@ -66,29 +71,37 @@ type DNSResult struct {
 }
 
 func DNSLookup(host string) DNSResult {
-	result := DNSResult{Host: host}
+    result := DNSResult{Host: host}
 
-	// A records
-	ips, err := net.LookupHost(host)
-	if err == nil {
-		result.IPs = ips
-	}
+    // Check if input is an IP — do reverse lookup
+    if net.ParseIP(host) != nil {
+        names, err := net.LookupAddr(host)
+        if err == nil {
+            result.CNAMEs = names
+        }
+        result.IPs = []string{host}
+        return result
+    }
 
-	// CNAME
-	cname, err := net.LookupCNAME(host)
-	if err == nil && cname != host+"." {
-		result.CNAMEs = []string{cname}
-	}
+    // Regular hostname lookup
+    ips, err := net.LookupHost(host)
+    if err == nil {
+        result.IPs = ips
+    }
 
-	// MX records
-	mxs, err := net.LookupMX(host)
-	if err == nil {
-		for _, mx := range mxs {
-			result.MXs = append(result.MXs, fmt.Sprintf("%s (priority %d)", mx.Host, mx.Pref))
-		}
-	}
+    cname, err := net.LookupCNAME(host)
+    if err == nil && cname != host+"." {
+        result.CNAMEs = []string{cname}
+    }
 
-	return result
+    mxs, err := net.LookupMX(host)
+    if err == nil {
+        for _, mx := range mxs {
+            result.MXs = append(result.MXs, fmt.Sprintf("%s (priority %d)", mx.Host, mx.Pref))
+        }
+    }
+
+    return result
 }
 
 type HopResult struct {
@@ -98,30 +111,50 @@ type HopResult struct {
 }
 
 func Traceroute(host string) ([]HopResult, error) {
-	cmd := exec.Command("traceroute", "-m", "30", "-w", "2", host)
-	out, err := cmd.Output()
-	if err != nil {
-		// try tracepath as fallback
-		cmd = exec.Command("tracepath", host)
-		out, err = cmd.Output()
-		if err != nil {
-			return nil, fmt.Errorf("traceroute not available")
-		}
-	}
+    cmd := exec.Command("traceroute", "-m", "30", "-w", "2", host)
+    out, err := cmd.Output()
+    if err != nil {
+        // try tracepath as fallback
+        cmd = exec.Command("tracepath", host)
+        out, err = cmd.Output()
+        if err != nil {
+            return nil, fmt.Errorf("traceroute not available")
+        }
+        return parseTracepath(string(out)), nil
+    }
+    return parseTraceroute(string(out)), nil
+}
 
-	var hops []HopResult
-	lines := strings.Split(string(out), "\n")
-	for _, line := range lines[1:] {
-		line = strings.TrimSpace(line)
-		if line == "" {
-			continue
-		}
-		hops = append(hops, HopResult{
-			Hop:  len(hops) + 1,
-			Host: line,
-		})
-	}
-	return hops, nil
+func parseTraceroute(output string) []HopResult {
+    var hops []HopResult
+    lines := strings.Split(output, "\n")
+    for _, line := range lines[1:] {
+        line = strings.TrimSpace(line)
+        if line == "" {
+            continue
+        }
+        hops = append(hops, HopResult{
+            Hop:  len(hops) + 1,
+            Host: line,
+        })
+    }
+    return hops
+}
+
+func parseTracepath(output string) []HopResult {
+    var hops []HopResult
+    lines := strings.Split(output, "\n")
+    for _, line := range lines {
+        line = strings.TrimSpace(line)
+        if line == "" || strings.HasPrefix(line, "Resume:") {
+            continue
+        }
+        hops = append(hops, HopResult{
+            Hop:  len(hops) + 1,
+            Host: line,
+        })
+    }
+    return hops
 }
 
 type SSLResult struct {
@@ -189,13 +222,8 @@ func ScanSubnet(subnet string) []HostResult {
 	return results
 }
 
-type BandwidthResult struct {
-    Upload   float64 // MB/s
-    Download float64 // MB/s
-}
-
 func BandwidthTest(host string, user string, port int, keyFile string) (BandwidthResult, error) {
-    // Test download speed — copy 10MB from remote /dev/zero to local /dev/null
+    // Download test — pull from remote
     downloadCmd := exec.Command("ssh",
         "-p", fmt.Sprintf("%d", port),
         "-i", keyFile,
@@ -206,14 +234,32 @@ func BandwidthTest(host string, user string, port int, keyFile string) (Bandwidt
     start := time.Now()
     out, err := downloadCmd.Output()
     elapsed := time.Since(start).Seconds()
-
     if err != nil {
-        return BandwidthResult{}, fmt.Errorf("bandwidth test failed: %s", err)
+        return BandwidthResult{}, fmt.Errorf("download test failed: %s", err)
     }
-
     downloadMBps := float64(len(out)) / elapsed / 1024 / 1024
+
+    // Upload test — push to remote
+    uploadCmd := exec.Command("ssh",
+        "-p", fmt.Sprintf("%d", port),
+        "-i", keyFile,
+        "-o", "StrictHostKeyChecking=no",
+        fmt.Sprintf("%s@%s", user, host),
+        "dd of=/dev/null bs=1M 2>/dev/null")
+
+    data := make([]byte, 10*1024*1024) // 10MB
+    uploadCmd.Stdin = strings.NewReader(string(data))
+
+    start = time.Now()
+    err = uploadCmd.Run()
+    elapsed = time.Since(start).Seconds()
+    if err != nil {
+        return BandwidthResult{Download: downloadMBps}, nil
+    }
+    uploadMBps := 10.0 / elapsed
 
     return BandwidthResult{
         Download: downloadMBps,
+        Upload:   uploadMBps,
     }, nil
 }
