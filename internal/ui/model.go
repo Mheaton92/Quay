@@ -38,6 +38,7 @@ type Model struct {
 	pinnedHosts   []string
 	networkModel  *network.Model
 	showNetwork   bool
+	activePanel		string
 }
 
 func NewModel(store connection.Store) Model {

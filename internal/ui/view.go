@@ -34,10 +34,34 @@ func (m Model) View() string {
 	var rightPanel string
 	if len(m.store.Connections) > 0 {
 		selected := m.store.Connections[m.cursor]
-		rightPanel = detail.Render(selected, m.width/2, panelHeight)
-	} else {
-		rightPanel = styles.Panel.Copy().Height(panelHeight).Render("No connections yet — press 'a' to add one")
-	}
+		if m.width >= 100 {
+			// Three column layout
+			colWidth := (m.width - lipgloss.Width(leftPanel) - 6) / 3
+
+			connectionPanel := detail.RenderConnection(selected, colWidth, panelHeight)
+			homelabPanel := detail.RenderHomelab(selected, colWidth, panelHeight)
+
+			activeContent := m.activePanel
+			if activeContent == ""  {
+				activeContent = lipgloss.NewStyle().
+					Foreground(lipgloss.Color("#484f58")).
+					Render("no active tool")
+			}
+			activeBox := lipgloss.NewStyle().
+					Border(lipgloss.RoundedBorder()).
+					BorderForeground(lipgloss.Color("58a6ff")).
+					Width(colWidth).
+					Height(panelHeight).
+					Padding(0,1).
+					Render(activeContent)
+
+				rightPanel = lipgloss.JoinHorizontal(lipgloss.Top, connectionPanel, homelabPanel, activeBox)
+		} else {
+				rightPanel = detail.Render(selected, m.width-lipgloss.Width(leftPanel), panelHeight)
+		}
+} else {
+	rightPanel = styles.Panel.Copy().Height(panelHeight).Render("No connections yet - press 'a' to add one")
+}
 
 	deleteName := ""
 	if m.confirmDelete && len(m.store.Connections) > 0 {
