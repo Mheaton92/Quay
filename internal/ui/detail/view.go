@@ -42,7 +42,7 @@ func Render(conn connection.Connection, width int, height int) string {
 
 func RenderConnection(conn connection.Connection, width, height int) string {
     return lipgloss.NewStyle().
-        Border(lipgloss.RoundedBorder()).
+        Border(lipgloss.RoundedBorder(), true, true, false, true).
         BorderForeground(lipgloss.Color("#58a6ff")).
         Width(width).
         Height(height).
@@ -52,7 +52,7 @@ func RenderConnection(conn connection.Connection, width, height int) string {
 
 func RenderHomelab(conn connection.Connection, width, height int) string {
     return lipgloss.NewStyle().
-        Border(lipgloss.RoundedBorder()).
+        Border(lipgloss.RoundedBorder(), false, true, true, true).
         BorderForeground(lipgloss.Color("#58a6ff")).
         Width(width).
         Height(height).

@@ -39,8 +39,8 @@ func (m Model) View() string {
 			infoWidth := (m.width - lipgloss.Width(leftPanel)) / 3
 			activeWidth := (m.width - lipgloss.Width(leftPanel)) - infoWidth - 4
 
-			connectionPanel := detail.RenderConnection(selected, infoWidth, panelHeight/2)
-			homelabPanel := detail.RenderHomelab(selected, infoWidth, panelHeight/2)
+			connectionPanel := detail.RenderConnection(selected, infoWidth, panelHeight*2/5)
+			homelabPanel := detail.RenderHomelab(selected, infoWidth, panelHeight - panelHeight*2/5)
 			stackedInfo := lipgloss.JoinVertical(lipgloss.Left, connectionPanel, homelabPanel)
 
 			activeContent := m.activePanel
