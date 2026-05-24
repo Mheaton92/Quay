@@ -93,6 +93,7 @@ func CopyToClipboard(key Key) error {
 		{"xclip", "-selection", "clipboard"},
 		{"xsel", "--clipboard", "--input"},
 		{"wl-copy"},
+		{"termux-clipboard-set"},
 	}
 
 	for _, args := range commands {
@@ -102,7 +103,7 @@ func CopyToClipboard(key Key) error {
 			return nil
 		}
 	}
-	return fmt.Errorf("no clipboard tool found (install xclip, xsel, or wl-copy)")
+	return fmt.Errorf("no clipboard tool found (install xclip, xsel, wl-copy, or termux-api)")
 }
 
 func GetFingerprint(key Key) (string, error) {
