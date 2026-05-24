@@ -108,6 +108,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 
+	if m.networkActive {
+		var cmd tea.Cmd
+		m.networkModel, cmd = m.networkModel.Update(msg)
+		return m, cmd
+	}
 	switch msg := msg.(type) {
 	case tickMsg:
 		return m, tick()
