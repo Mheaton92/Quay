@@ -12,6 +12,10 @@ import (
 	"github.com/mheaton92/quay/internal/ui/theme"
 )
 
+func (m Model) anyToolActive() bool {
+	return m.networkActive || m.formActive || m.scpActive || m.keysActive
+}
+
 func (m Model) View() string {
 	if m.width < 70 || m.height < 20 {
 		return lipgloss.NewStyle().
@@ -21,6 +25,7 @@ func (m Model) View() string {
 			Render("\n\nTerminal too small\nMinimum size: 70x20\nCurrent: " +
 				fmt.Sprintf("%dx%d", m.width, m.height))
 	}
+
 	netBarHeight := 5
 	netBarHeight += len(m.pinnedHosts) * 5
 
@@ -29,58 +34,55 @@ func (m Model) View() string {
 	if panelHeight < 5 {
 		panelHeight = 5
 	}
+
 	leftPanel := connectionlist.Render(m.store.Connections, m.cursor, panelHeight)
+	leftWidth := lipgloss.Width(leftPanel)
 
 	var rightPanel string
-	if len(m.store.Connections) > 0 {
-		selected := m.store.Connections[m.cursor]
-		if m.width >= 100 {
-			// Stacked layout — connection+homelab stacked, active panel wider
-			infoWidth := (m.width - lipgloss.Width(leftPanel)) / 3
-			activeWidth := (m.width - lipgloss.Width(leftPanel)) - infoWidth - 4
-
-			connectionPanel := detail.RenderConnection(selected, infoWidth, panelHeight*2/5)
-			homelabPanel := detail.RenderHomelab(selected, infoWidth, panelHeight - panelHeight*2/5)
-			stackedInfo := lipgloss.JoinVertical(lipgloss.Left, connectionPanel, homelabPanel)
-
-			activeContent := m.activePanel
-			if m.networkModel != nil {
-				if m.networkActive {
-					activeContent = m.networkModel.View()
-				} else {
-					activeContent = lipgloss.NewStyle().
-						Foreground(lipgloss.Color("#484f58")).
-						Render(m.networkModel.View())
-				}
-			}
-			if m.formActive {
-				activeContent = m.form.View()
-			}
-			if m.scpActive {
-				activeContent = m.scpModel.View()
-			}
-			if m.keysActive {
-				activeContent = m.keysModel.View()
-			}
-			if activeContent == "" {
-				activeContent = lipgloss.NewStyle().
-					Foreground(lipgloss.Color("#484f58")).
-					Render("no active tool")
-			}
-			activeBox := lipgloss.NewStyle().
-				Border(lipgloss.RoundedBorder()).
-				BorderForeground(lipgloss.Color("#58a6ff")).
-				Width(activeWidth).
-				Height(panelHeight).
-				Padding(0, 1).
-				Render(activeContent)
-
-			rightPanel = lipgloss.JoinHorizontal(lipgloss.Top, stackedInfo, activeBox)
-		} else {
-			rightPanel = detail.Render(selected, m.width-lipgloss.Width(leftPanel), panelHeight)
-		}
+	if len(m.store.Connections) == 0 {
+		rightPanel = styles.Panel.Copy().Height(panelHeight).
+			Render("No connections yet — press 'a' to add one")
 	} else {
-		rightPanel = styles.Panel.Copy().Height(panelHeight).Render("No connections yet - press 'a' to add one")
+		selected := m.store.Connections[m.cursor]
+
+		if m.width >= 100 {
+			totalRight := m.width - leftWidth
+
+			if m.anyToolActive() {
+				// detail panel (~40%) + active tool panel (~60%)
+				// each panel border is 2 wide, so inner widths sum to totalRight - 4
+				middleInner := (totalRight - 4) * 2 / 5
+				middlePanel := detail.Render(selected, middleInner, panelHeight)
+				toolInner := totalRight - lipgloss.Width(middlePanel) - 2
+
+				var toolContent string
+				switch {
+				case m.networkActive && m.networkModel != nil:
+					toolContent = m.networkModel.View()
+				case m.formActive && m.form != nil:
+					toolContent = m.form.View()
+				case m.scpActive && m.scpModel != nil:
+					toolContent = m.scpModel.View()
+				case m.keysActive && m.keysModel != nil:
+					toolContent = m.keysModel.View()
+				}
+
+				toolBox := lipgloss.NewStyle().
+					Border(lipgloss.RoundedBorder()).
+					BorderForeground(lipgloss.Color("#58a6ff")).
+					Width(toolInner).
+					Height(panelHeight).
+					Padding(0, 1).
+					Render(toolContent)
+
+				rightPanel = lipgloss.JoinHorizontal(lipgloss.Top, middlePanel, toolBox)
+			} else {
+				// detail panel fills all remaining width; -2 accounts for its border
+				rightPanel = detail.Render(selected, totalRight-2, panelHeight)
+			}
+		} else {
+			rightPanel = detail.Render(selected, m.width-leftWidth-2, panelHeight)
+		}
 	}
 
 	deleteName := ""
@@ -90,6 +92,7 @@ func (m Model) View() string {
 
 	mainView := lipgloss.JoinHorizontal(lipgloss.Top, leftPanel, rightPanel)
 	statusBar := statusbar.Render(m.width, m.confirmDelete, deleteName)
+
 	var liveHost string
 	var liveStats *monitor.HostStats
 	if len(m.store.Connections) > 0 {
@@ -114,26 +117,21 @@ func (m Model) View() string {
 
 	netBar := statusbar.RenderNetBar(m.pinnedHosts, pinnedStats, liveHost, liveStats, m.width)
 
-	fullView := lipgloss.JoinVertical(
-		lipgloss.Left,
-		mainView,
-		netBar,
-		statusBar,
-	)
+	fullView := lipgloss.JoinVertical(lipgloss.Left, mainView, netBar, statusBar)
 
-	// Build overlay if any panel is active
 	var overlay string
-	if m.showHelp {
+	switch {
+	case m.showHelp:
 		overlay = keybinds.Render(m.width, m.keybinds)
-	} else if m.showForm {
+	case m.showForm:
 		overlay = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("#58a6ff")).
-			Width(m.width-14).
-			Height(m.height-14).
+			Width(m.width - 14).
+			Height(m.height - 14).
 			Padding(1, 2).
 			Render(m.form.View())
-	} else if m.showSCP {
+	case m.showSCP:
 		overlay = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("#58a6ff")).
@@ -141,7 +139,7 @@ func (m Model) View() string {
 			Height(15).
 			Padding(1, 2).
 			Render(m.scpModel.View())
-	} else if m.showKeys {
+	case m.showKeys:
 		overlay = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("#58a6ff")).
@@ -149,7 +147,7 @@ func (m Model) View() string {
 			Height(15).
 			Padding(1, 2).
 			Render(m.keysModel.View())
-	} else if m.showNetwork {
+	case m.showNetwork:
 		overlay = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("#58a6ff")).
@@ -160,13 +158,7 @@ func (m Model) View() string {
 	}
 
 	if overlay != "" {
-		return ovl.Composite(
-			overlay,
-			fullView,
-			ovl.Center,
-			ovl.Center,
-			0, 0,
-		)
+		return ovl.Composite(overlay, fullView, ovl.Center, ovl.Center, 0, 0)
 	}
 
 	return fullView
