@@ -1,35 +1,82 @@
-# Quay
+# ⚓ Quay
 
-A terminal-based SSH manager and homelab control center.
+> A terminal-native SSH manager and homelab control center
 
-Quay brings all of your homelab connections, stats, and controls into a single
-terminal interface. No browser, no web server - just a fast, keyboard-driven TUI
-that works anywhere.
+![quay screenshot](docs/screenshot.png)
 
-This was built as a way for me to learn GO.
+Quay is a keyboard-driven TUI for managing SSH connections, monitoring your homelab, and running network diagnostics — all from the terminal.
 
 ## Features
 
-- Manage all SSH connections in one place
-- Live stats pulled over SSH - CPU, RAM, disk, network
-- SSH key management - generate, view, deploy
-- Homelab control center - Proxmox, TrueNAS, AdGuard and more
-- Tabs and toggleable panels inspired by superfile
-- Fully repmappable keybinds
-- Single binary - works on Linux, macOS, Android (Termux)
+### SSH Management
+- Add, edit, and delete SSH connections
+- Connect with a single keypress
+- SCP file transfer — upload and download
+- SSH key management — generate, deploy, copy, delete
+- Import connections from `~/.ssh/config`
+- Tracks last connected time and connection count
 
+### Network Monitor
+- Live ping latency and packet loss for all connections
+- Sparkline graphs updated in real time
+- Pin connections to the bottom bar — session or persistent
 
-## Status
+### Networking Tools
+- **Port Scanner** — check if services are running
+- **Wake on LAN** — wake sleeping machines remotely
+- **DNS Lookup** — resolve hostnames and IPs
+- **Traceroute** — visualize network hops
+- **SSL Checker** — monitor certificate expiry
+- **Subnet Scanner** — discover devices on your network
+- **Bandwidth Test** — measure throughput over SSH
 
-Early development - not ready for use yet.
+## Installation
 
-## Roadmap
+### From source
+```bash
+git clone https://github.com/mheaton92/quay.git
+cd quay
+go build -o quay ./cmd/quay
+sudo mv quay /usr/local/bin/
+```
 
-- [x] Phase 1 - Connection management and JSON persistence
-- [ ] Phase 2 - SSH connect and live stats
-- [ ] Phase 3 - Bubble tea TUI
-- [ ] Phase 4 - Homelab integrations and monitoring
+### Termux (Android)
+```bash
+pkg install golang git openssh
+git clone https://github.com/mheaton92/quay.git
+cd quay
+go build -o quay ./cmd/quay
+mv quay ~/bin/
+```
 
-## Built With
-- [Go](https://go.dev)
-- [Bubble Tea](https://github.com/charmbracelet/bubbletea)
+## Keybinds
+
+| Key | Action |
+|-----|--------|
+| `enter` | Connect via SSH |
+| `a` | Add connection |
+| `e` | Edit connection |
+| `d` | Delete connection |
+| `s` | SCP file transfer |
+| `K` | SSH key manager |
+| `N` | Networking tools |
+| `i` | Import from ~/.ssh/config |
+| `p` | Pin to monitor bar (session) |
+| `P` | Pin to monitor bar (persistent) |
+| `?` | Toggle keybind help |
+| `j/k` | Navigate |
+| `q` | Quit |
+
+## Configuration
+
+Connections are stored in `~/.config/quay/connections.json`
+
+Keybinds can be customized in `~/.config/quay/keybinds.toml` (coming soon)
+
+## Credits
+
+See [CREDITS.md](CREDITS.md)
+
+## License
+
+MIT
