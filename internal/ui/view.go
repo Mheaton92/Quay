@@ -39,53 +39,63 @@ func (m Model) View() string {
 	leftWidth := lipgloss.Width(leftPanel)
 
 	var rightPanel string
-	if len(m.store.Connections) == 0 {
-		rightPanel = styles.Panel.Copy().Height(panelHeight).
-			Render("No connections yet — press 'a' to add one")
-	} else {
-		selected := m.store.Connections[m.cursor]
 
-		if m.width >= 100 {
-			totalRight := m.width - leftWidth
+	if m.width >= 100 {
+		totalRight := m.width - leftWidth
 
-			if m.anyToolActive() {
-				// - tool panel
-				middleInner := (totalRight - 4) * 2 / 5
-				middlePanel := detail.Render(selected, middleInner, panelHeight)
-				toolInner := totalRight - lipgloss.Width(middlePanel) - 2
-
-				var toolContent string
-				switch {
-				case m.confirmImport:
-					var lines string
-					for _, c := range m.pendingImport {
-						lines += fmt.Sprintf("  %-20s %s\n", c.Name, c.Host)
-					}
-					toolContent = "IMPORT FROM ~/.ssh/config\n\n" + lines + "\n[y] import  [esc] cancel"
-				case m.networkActive && m.networkModel != nil:
-					toolContent = m.networkModel.View()
-				case m.formActive && m.form != nil:
-					toolContent = m.form.View()
-				case m.scpActive && m.scpModel != nil:
-					toolContent = m.scpModel.View()
-				case m.keysActive && m.keysModel != nil:
-					toolContent = m.keysModel.View()
-				}
-
-				toolBox := lipgloss.NewStyle().
-					Border(lipgloss.RoundedBorder()).
-					BorderForeground(lipgloss.Color("#58a6ff")).
-					Width(toolInner).
-					Height(panelHeight).
-					Padding(0, 1).
-					Render(toolContent)
-
-				rightPanel = lipgloss.JoinHorizontal(lipgloss.Top, middlePanel, toolBox)
+		if m.anyToolActive() {
+			// tool panel
+			middleInner := (totalRight - 4) * 2 / 5
+			var middlePanel string
+			if len(m.store.Connections) > 0 {
+				selected := m.store.Connections[m.cursor]
+				middlePanel = detail.Render(selected, middleInner, panelHeight)
 			} else {
-				rightPanel = detail.Render(selected, totalRight-2, panelHeight)
+				middlePanel = styles.Panel.Copy().Width(middleInner).Height(panelHeight).Render("")
 			}
+			toolInner := totalRight - lipgloss.Width(middlePanel) - 2
+
+			var toolContent string
+			switch {
+			case m.confirmImport:
+				var lines string
+				for _, c := range m.pendingImport {
+					lines += fmt.Sprintf("  %-20s %s\n", c.Name, c.Host)
+				}
+				toolContent = "IMPORT FROM ~/.ssh/config\n\n" + lines + "\n[y] import  [esc] cancel"
+			case m.networkActive && m.networkModel != nil:
+				toolContent = m.networkModel.View()
+			case m.formActive && m.form != nil:
+				toolContent = m.form.View()
+			case m.scpActive && m.scpModel != nil:
+				toolContent = m.scpModel.View()
+			case m.keysActive && m.keysModel != nil:
+				toolContent = m.keysModel.View()
+			}
+
+			toolBox := lipgloss.NewStyle().
+				Border(lipgloss.RoundedBorder()).
+				BorderForeground(lipgloss.Color("#58a6ff")).
+				Width(toolInner).
+				Height(panelHeight).
+				Padding(0, 1).
+				Render(toolContent)
+
+			rightPanel = lipgloss.JoinHorizontal(lipgloss.Top, middlePanel, toolBox)
+		} else if len(m.store.Connections) > 0 {
+			selected := m.store.Connections[m.cursor]
+			rightPanel = detail.Render(selected, totalRight-2, panelHeight)
 		} else {
+			rightPanel = styles.Panel.Copy().Width(totalRight - 2).Height(panelHeight).
+				Render("No connections yet — press 'a' to add one")
+		}
+	} else {
+		if len(m.store.Connections) > 0 {
+			selected := m.store.Connections[m.cursor]
 			rightPanel = detail.Render(selected, m.width-leftWidth-2, panelHeight)
+		} else {
+			rightPanel = styles.Panel.Copy().Width(m.width - leftWidth - 2).Height(panelHeight).
+				Render("No connections yet — press 'a' to add one")
 		}
 	}
 
@@ -123,7 +133,7 @@ func (m Model) View() string {
 
 	fullView := lipgloss.JoinVertical(lipgloss.Left, mainView, netBar, statusBar)
 
-	// - overlays (narrow screen)
+	// -- overlays (narrow screen)
 	var overlay string
 	switch {
 	case m.showHelp:
@@ -132,8 +142,8 @@ func (m Model) View() string {
 		overlay = lipgloss.NewStyle().
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("#58a6ff")).
-			Width(m.width - 14).
-			Height(m.height - 14).
+			Width(m.width-14).
+			Height(m.height-14).
 			Padding(1, 2).
 			Render(m.form.View())
 	case m.showSCP:
@@ -169,7 +179,7 @@ func (m Model) View() string {
 			Border(lipgloss.RoundedBorder()).
 			BorderForeground(lipgloss.Color("#58a6ff")).
 			Width(50).
-			Height(len(m.pendingImport) + 6).
+			Height(len(m.pendingImport)+6).
 			Padding(1, 2).
 			Render("IMPORT FROM ~/.ssh/config\n\n" + lines + "\n[y] import  [esc] cancel")
 	}
