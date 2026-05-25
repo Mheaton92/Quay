@@ -11,14 +11,23 @@ import (
 
 type Model struct {
 	conn            connection.Connection
-	portStr         string // temporary string for port input
-	tagsStr         string // temporary string for tags input
+	portStr         string
+	tagsStr         string
 	form            *huh.Form
 	done            bool
-	editing         bool // true if editing an existing connection, false if creating new
-	page            int  // current page index
+	editing         bool
+	page            int
+	field						int
 	originalName    string
 	validationError string
+	showFieldHelp		bool
+}
+
+var fieldNames = []string{
+	  "Name", "Host", "User", "Port", "IdentityFile", "MACAddress",
+    "ProxyJump", "ConnectTimeout", "ForwardAgent", "ServerAliveInterval", "ServerAliveCountMax", "TCPKeepAlive",
+    "LocalForward", "RemoteForward", "DynamicForward",
+    "Tags", "Notes", "Args",
 }
 
 func (m *Model) Init() tea.Cmd {

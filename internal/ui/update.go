@@ -26,7 +26,6 @@ func tick() tea.Cmd {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	// ctrl+c always quits
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
@@ -48,6 +47,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.showNetwork = false
 				return m, nil
 			}
+			if m.showImport {
+				m.showImport = false
+				m.pendingImport = nil
+				return m, nil
+			}
 			if m.networkActive {
 				m.networkActive = false
 				return m, nil
@@ -58,6 +62,11 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			if m.scpActive {
 				m.scpActive = false
+				return m, nil
+			}
+			if m.confirmImport {
+				m.confirmImport = false
+				m.pendingImport = nil
 				return m, nil
 			}
 			if m.keysActive && m.keysModel.IsInView() {
@@ -80,7 +89,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	// SCP gets messages
 	if m.showSCP {
 		var cmd tea.Cmd
 		m.scpModel, cmd = m.scpModel.Update(msg)
@@ -90,7 +98,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 
-	// Form gets messages
 	if m.showForm {
 		var cmd tea.Cmd
 		m.form, cmd = m.form.Update(msg)
@@ -106,7 +113,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	}
 
-	// Keys gets messages
 	if m.showKeys {
 		var cmd tea.Cmd
 		m.keysModel, cmd = m.keysModel.Update(msg)
@@ -149,6 +155,7 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, cmd
 	}
+
 	if m.keysActive {
 		var cmd tea.Cmd
 		m.keysModel, cmd = m.keysModel.Update(msg)
@@ -209,23 +216,33 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					m.cursor--
 				}
 				m.confirmDelete = false
+			} else if m.confirmImport || m.showImport {
+				for _, conn := range m.pendingImport {
+					m.store.Add(conn)
+					m.monitor.Add(conn.Host)
+				}
+				m.pendingImport = nil
+				m.confirmImport = false
+				m.showImport = false
 			}
 		} else if key == "n" {
 			m.confirmDelete = false
+			m.confirmImport = false
+			m.showImport = false
+			m.pendingImport = nil
 		} else if key == m.keybinds.Edit {
-    if len(m.store.Connections) > 0 {
-        selected := m.store.Connections[m.cursor]
-        m.form = form.NewForm(selected)
-        m.form.SetEditing(true)
-        if m.width >= 100 {
-            m.formActive = true
-            m.showForm = false
-        } else {
-            m.showForm = true
-        }
-        return m, m.form.Init()
-    }
-
+			if len(m.store.Connections) > 0 {
+				selected := m.store.Connections[m.cursor]
+				m.form = form.NewForm(selected)
+				m.form.SetEditing(true)
+				if m.width >= 100 {
+					m.formActive = true
+					m.showForm = false
+				} else {
+					m.showForm = true
+				}
+				return m, m.form.Init()
+			}
 		} else if key == m.keybinds.SCP {
 			if len(m.store.Connections) > 0 {
 				selected := m.store.Connections[m.cursor]
@@ -238,7 +255,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 				return m, m.scpModel.Init()
 			}
-
 		} else if key == m.keybinds.Keys {
 			keysModel, err := uikeys.NewKeys(m.store.Connections)
 			if err != nil {
@@ -269,11 +285,9 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				selected := m.store.Connections[m.cursor]
 				m.networkModel = network.NewNetwork(selected)
 				if m.width >= 100 {
-					// wide screen — show in active panel
 					m.networkActive = true
 					m.showNetwork = false
 				} else {
-					// narrow screen — show as overlay
 					m.showNetwork = true
 				}
 			}
@@ -282,9 +296,21 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if err != nil {
 				m.err = err
 			} else {
-				for _, conn := range imported {
-					m.store.Add(conn)
-					m.monitor.Add(conn.Host)
+				existing := make(map[string]bool)
+				for _, c := range m.store.Connections {
+					existing[c.Name] = true
+				}
+				for _, c := range imported {
+					if !existing[c.Name] {
+						m.pendingImport = append(m.pendingImport, c)
+					}
+				}
+				if len(m.pendingImport) > 0 {
+					if m.width >= 100 {
+						m.confirmImport = true
+					} else {
+						m.showImport = true
+					}
 				}
 			}
 		}

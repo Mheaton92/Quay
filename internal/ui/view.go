@@ -13,7 +13,7 @@ import (
 )
 
 func (m Model) anyToolActive() bool {
-	return m.networkActive || m.formActive || m.scpActive || m.keysActive
+	return m.confirmImport || m.networkActive || m.formActive || m.scpActive || m.keysActive
 }
 
 func (m Model) View() string {
@@ -49,14 +49,19 @@ func (m Model) View() string {
 			totalRight := m.width - leftWidth
 
 			if m.anyToolActive() {
-				// detail panel (~40%) + active tool panel (~60%)
-				// each panel border is 2 wide, so inner widths sum to totalRight - 4
+				// - tool panel
 				middleInner := (totalRight - 4) * 2 / 5
 				middlePanel := detail.Render(selected, middleInner, panelHeight)
 				toolInner := totalRight - lipgloss.Width(middlePanel) - 2
 
 				var toolContent string
 				switch {
+				case m.confirmImport:
+					var lines string
+					for _, c := range m.pendingImport {
+						lines += fmt.Sprintf("  %-20s %s\n", c.Name, c.Host)
+					}
+					toolContent = "IMPORT FROM ~/.ssh/config\n\n" + lines + "\n[y] import  [esc] cancel"
 				case m.networkActive && m.networkModel != nil:
 					toolContent = m.networkModel.View()
 				case m.formActive && m.form != nil:
@@ -77,7 +82,6 @@ func (m Model) View() string {
 
 				rightPanel = lipgloss.JoinHorizontal(lipgloss.Top, middlePanel, toolBox)
 			} else {
-				// detail panel fills all remaining width; -2 accounts for its border
 				rightPanel = detail.Render(selected, totalRight-2, panelHeight)
 			}
 		} else {
@@ -119,6 +123,7 @@ func (m Model) View() string {
 
 	fullView := lipgloss.JoinVertical(lipgloss.Left, mainView, netBar, statusBar)
 
+	// - overlays (narrow screen)
 	var overlay string
 	switch {
 	case m.showHelp:
@@ -155,6 +160,18 @@ func (m Model) View() string {
 			Height(20).
 			Padding(1, 2).
 			Render(m.networkModel.View())
+	case m.showImport:
+		var lines string
+		for _, c := range m.pendingImport {
+			lines += fmt.Sprintf("  %-20s %s\n", c.Name, c.Host)
+		}
+		overlay = lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#58a6ff")).
+			Width(50).
+			Height(len(m.pendingImport) + 6).
+			Padding(1, 2).
+			Render("IMPORT FROM ~/.ssh/config\n\n" + lines + "\n[y] import  [esc] cancel")
 	}
 
 	if overlay != "" {

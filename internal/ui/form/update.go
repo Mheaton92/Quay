@@ -14,16 +14,27 @@ func (m *Model) Update(msg tea.Msg) (*Model, tea.Cmd) {
 			if m.page > 3 {
 				m.page = 3
 			}
+			m.field = []int{0, 6, 12, 15}[m.page]
 			return m, m.form.NextGroup()
 		case "shift+tab", "left":
 			m.page--
 			if m.page < 0 {
 				m.page = 0
 			}
+			m.field = []int{0, 6, 12, 15}[m.page]
 			return m, m.form.PrevGroup()
+		case "?":
+			m.showFieldHelp = !m.showFieldHelp
+			return m, nil
 		case "up":
+			if m.field > 0 {
+				m.field--
+			}
 			return m, m.form.PrevField()
 		case "down":
+			if m.field < len(fieldNames)-1 {
+				m.field++
+			}
 			return m, m.form.NextField()
 		case "ctrl+s":
 			if m.conn.Name == "" {

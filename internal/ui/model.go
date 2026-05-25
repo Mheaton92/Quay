@@ -43,6 +43,9 @@ type Model struct {
 	showNetwork   bool
 	networkActive bool
 	activePanel   string
+	confirmImport	bool
+	pendingImport	[]connection.Connection
+	showImport		bool
 }
 
 func NewModel(store connection.Store) Model {

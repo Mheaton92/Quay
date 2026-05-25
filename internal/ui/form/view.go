@@ -1,6 +1,10 @@
 package form
 
-import "github.com/charmbracelet/lipgloss"
+import (
+	"github.com/charmbracelet/lipgloss"
+	"github.com/mheaton92/quay/internal/ui/help"
+	"github.com/mheaton92/quay/internal/ui/theme"
+)
 
 func (m *Model) View() string {
 	tabs := []string{"Basic", "Connection", "Forwarding", "Meta"}
@@ -21,5 +25,22 @@ func (m *Model) View() string {
 			Render("✗ "+m.validationError)
 	}
 
-	return tabBar + "\n\n" + view
+	return tabBar + "\n\n" + view + "\n\n" + m.renderFieldHelp()
+}
+
+func (m *Model) renderFieldHelp() string {
+    if !m.showFieldHelp {
+        return ""
+    }
+    h := help.GetFieldHelp(fieldNames[m.field])
+    if h == nil {
+        return ""
+    }
+    return lipgloss.NewStyle().
+				Foreground(theme.ColorBlue).
+				Bold(true).
+				Render(h.Field) + ":  " +
+				lipgloss.NewStyle().
+				Foreground(theme.ColorWhite).
+				Render(h.Description)
 }
