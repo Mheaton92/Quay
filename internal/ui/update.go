@@ -26,6 +26,12 @@ func tick() tea.Cmd {
 }
 
 func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	// always update dimensions, even when a tool is active
+	if resize, ok := msg.(tea.WindowSizeMsg); ok {
+		m.width = resize.Width
+		m.height = resize.Height
+	}
+
 	if msg, ok := msg.(tea.KeyMsg); ok {
 		if msg.String() == "ctrl+c" {
 			return m, tea.Quit
@@ -165,9 +171,6 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tickMsg:
 		return m, tick()
-	case tea.WindowSizeMsg:
-		m.width = msg.Width
-		m.height = msg.Height
 	case sshExitMsg:
 		for i, conn := range m.store.Connections {
 			if conn.Name == msg.connName {
