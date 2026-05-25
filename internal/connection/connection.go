@@ -53,10 +53,12 @@ func NewConnection(name, host, user string, port int) Connection {
 }
 
 func (s *Store) Save() error {
-	path, err := config.ConfigDir()
+	dir, err := config.ConfigDir()
 	if err != nil {
 		return err
 	}
+	path := dir + "/connections.json"
+	
 
 	// Backup existing file before writing
 	if _, err := os.Stat(path); err == nil {
